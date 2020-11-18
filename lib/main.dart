@@ -1,21 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:wheelit/activity/HomeScreen.dart';
+import 'package:wheelit/activity/AccountScreen.dart';
+import 'package:wheelit/activity/TicketScreen.dart';
 
-void main() => runApp(MaterialApp(home: HomeScreen()));
-
-class HomeScreen extends StatefulWidget {
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Wheelit"),
-        centerTitle: true,
-      ),
-      drawer: Drawer(),
-    );
-  }
-}
+void main() => runApp(MaterialApp(
+      theme: ThemeData(accentColor: Colors.tealAccent[700]),
+      routes: {
+        '/home': (context) => HomeScreen(),
+        '/account': (context) => AccountScreen(),
+        '/ticket': (context) => TicketScreen(),
+      },
+      initialRoute: '/home',
+    ));
