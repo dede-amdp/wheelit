@@ -7,12 +7,12 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
-  Map userData = null; //se è null l'utente non è loggato -> inseriamo il db?
+  Map userData; //se è null l'utente non è loggato -> inseriamo il db?
   String userEmail;
 
   @override
   void initState() {
-    //accedi al db interno userData = db.get('email');
+    //accedi al db interno userEmail = db.get('email');
     if (userData == null) logIn();
     getData(userEmail);
     super.initState();
@@ -35,15 +35,9 @@ class _AccountScreenState extends State<AccountScreen> {
 
   Future<void> getData(String userEmail) async {
     //Prendi i dati utente (almeno l'email) dal db in locale?
-    //await Future.delayed(Duration(seconds: 3)); //simula il fetching dei dati
     Map usableData = await DatabaseManager.getUserData(userEmail);
     if (usableData != null) {
       setState(() {
-        /*this.userData.addAll({
-        'name': 'Filippo',
-        'cognome': 'Di Lipponia',
-        'dataNascita': '20/02/2020'
-      });*/
         userData = usableData;
       });
     } else {
@@ -55,21 +49,7 @@ class _AccountScreenState extends State<AccountScreen> {
     //ESEGUI IL LOG IN CON GOOGLE AUTH, PER ORA INIZIALIZZA userData
     //il log in fatto con google (e apple?) salva la mail dell'utente nel dispositivo
     //e poi assegnamo il valore a userData :)
-    //this.userData = {'email': 'pippolippo@gmail.com'}; //simula un log in
+    //simula un log in
     userEmail = 'pippolippo@gmail.com';
   }
 }
-
-//ROBA INUTILE ELIMINABILE CHE SERVE PER TEST
-/*class Contents extends StatelessWidget {
-  Map values;
-  Contents({this.values});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-        children: values.values.map((e) {
-      return Text(e.toString());
-    }).toList());
-  }
-}*/

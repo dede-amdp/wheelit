@@ -39,7 +39,6 @@ class DatabaseManager {
           data.addAll(element.data());
         });
       });
-      //TODO CAPIRE PERCHè MALGRADO IO CERCO LE CARDS NON ESCE NULLA
     } catch (error) {
       print(error.toString());
       data = null;
