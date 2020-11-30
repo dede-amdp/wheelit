@@ -7,52 +7,61 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
-  Map userData; //se è null l'utente non è loggato -> inseriamo il db?
+  Map userData = null; //se è null l'utente non è loggato -> inseriamo il db?
+  String userEmail;
 
   @override
   void initState() {
-    super.initState();
     //accedi al db interno userData = db.get('email');
     if (userData == null) logIn();
-    getData();
+    getData(userEmail);
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(elevation: 0.0, backgroundColor: Colors.transparent),
-      body: userData.length <= 1 //se contiene solo un campo (l'email)
+      body: userData == null //se contiene solo un campo (l'email)
           ? Center(child: CircularProgressIndicator()) //attende il fetch
           : Center(
               child: RaisedButton(
                   child: Text("Data"),
                   onPressed: () {
-                    print(DatabaseManager().getUsersList().toString());
+                    print(userData.toString());
                   })), //abbiamo i dati
     );
   }
 
-  Future<void> getData() async {
+  Future<void> getData(String userEmail) async {
     //Prendi i dati utente (almeno l'email) dal db in locale?
-    await Future.delayed(Duration(seconds: 3)); //simula il fetching dei dati
-    setState(() {
-      this.userData.addAll({
+    //await Future.delayed(Duration(seconds: 3)); //simula il fetching dei dati
+    Map usableData = await DatabaseManager.getUserData(userEmail);
+    if (usableData != null) {
+      setState(() {
+        /*this.userData.addAll({
         'name': 'Filippo',
         'cognome': 'Di Lipponia',
         'dataNascita': '20/02/2020'
+      });*/
+        userData = usableData;
       });
-    });
+    } else {
+      print("NO DATA");
+    }
   }
 
   void logIn() {
     //ESEGUI IL LOG IN CON GOOGLE AUTH, PER ORA INIZIALIZZA userData
     //il log in fatto con google (e apple?) salva la mail dell'utente nel dispositivo
     //e poi assegnamo il valore a userData :)
-    this.userData = {'email': 'pippolippo@gmail.com'}; //simula un log in
+    //this.userData = {'email': 'pippolippo@gmail.com'}; //simula un log in
+    userEmail = 'pippolippo@gmail.com';
   }
 }
 
-class Contents extends StatelessWidget {
+//ROBA INUTILE ELIMINABILE CHE SERVE PER TEST
+/*class Contents extends StatelessWidget {
   Map values;
   Contents({this.values});
 
@@ -63,4 +72,4 @@ class Contents extends StatelessWidget {
       return Text(e.toString());
     }).toList());
   }
-}
+}*/
