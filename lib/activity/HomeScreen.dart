@@ -17,7 +17,13 @@ class _HomeScreenState extends State<HomeScreen> {
             return Stack(
               children: [
                 //GoogleMaps
-                Placeholder(color: Colors.red),
+                //Placeholder(color: Colors.red),
+                Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                  child:
+                      Image.asset('assets/images/truffa.png', fit: BoxFit.fill),
+                ),
                 SafeArea(
                   child: Align(
                       alignment: Alignment.topLeft,
@@ -25,9 +31,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           IconButton(
+                              iconSize: 32.0,
                               icon: Icon(
                                 Icons.menu,
-                                color: Colors.tealAccent[700],
+                                color: Theme.of(context).accentColor,
                               ),
                               onPressed: () {
                                 Scaffold.of(context).openDrawer();
@@ -179,13 +186,11 @@ class _DrawerScreenState extends State<DrawerScreen> {
       opts.add(Card(
           child: ListTile(
               //NON CANCELLARE: IMPLEMENTAZIONE DELLA SNACKBAR IN CASO DI TELE-AFFITTO
-              /*onTap: () {
+              onTap: () {
                 Scaffold.of(context).showSnackBar(SnackBar(
                     backgroundColor: Colors.white,
                     duration: Duration(minutes: 5),
-                    action: SnackBarAction(label: "Rent",onPressed: (){
-
-                    }),
+                    action: SnackBarAction(label: "Rent", onPressed: () {}),
                     content: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,15 +201,16 @@ class _DrawerScreenState extends State<DrawerScreen> {
                                   color: Colors.black,
                                   fontSize: 24.0)),
                           Text(
-                            "Type: \t ${mezzo.type.toString()}",
-                            style: TextStyle(color: Colors.black),
+                            "Type: \t ${mezzo.type == TransportType.BIKE ? 'Bike' : 'Scoouter'}",
+                            style:
+                                TextStyle(color: Colors.black, fontSize: 24.0),
                           ),
                           Text("Price:\t${mezzo.price}/min",
                               style: TextStyle(
                                   color: Colors.black, fontSize: 24.0)),
                         ])));
                 Navigator.pop(context);
-              },*/
+              },
               //FINE ZONA DA NON CANCELLARE
               isThreeLine: true,
               title: Text('${mezzo.code}'),

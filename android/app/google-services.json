@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "416372079702",
+    "firebase_url": "https://wheelit-4bc5f.firebaseio.com",
+    "project_id": "wheelit-4bc5f",
+    "storage_bucket": "wheelit-4bc5f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:416372079702:android:e95159381a7eb7a1124ff7",
+        "android_client_info": {
+          "package_name": "com.example.wheelit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "416372079702-6ec900gfr4rhb3re5n4i4vtt13n3ljto.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBF_xeJGe4yPW5xR_-jdTABXgMQKq-6dzU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "416372079702-6ec900gfr4rhb3re5n4i4vtt13n3ljto.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
