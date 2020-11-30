@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wheelit/classes/DatabaseManager.dart';
 
 class AccountScreen extends StatefulWidget {
   @override
@@ -22,7 +23,12 @@ class _AccountScreenState extends State<AccountScreen> {
       appBar: AppBar(elevation: 0.0, backgroundColor: Colors.transparent),
       body: userData.length <= 1 //se contiene solo un campo (l'email)
           ? Center(child: CircularProgressIndicator()) //attende il fetch
-          : Center(child: Contents(values: userData)), //abbiamo i dati
+          : Center(
+              child: RaisedButton(
+                  child: Text("Data"),
+                  onPressed: () {
+                    print(DatabaseManager().getUsersList().toString());
+                  })), //abbiamo i dati
     );
   }
 
