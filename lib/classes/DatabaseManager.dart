@@ -45,4 +45,30 @@ class DatabaseManager {
     }
     return data;
   }
+
+  static Future<Map> getTicketData(String userEmail) async {
+    await Firebase.initializeApp();
+    Map data = {};
+
+    try {
+      int i = 0;
+      CollectionReference ticketsCollection =
+          FirebaseFirestore.instance.collection('tickets');
+      await ticketsCollection
+          .where('user', isEqualTo: userEmail)
+          .orderBy('buyTimeStamp')
+          .get()
+          .then((values) {
+        if (values != null) {
+          values.docs.forEach((ticket) {
+            data.addAll({'${i++}': ticket.data()});
+          });
+        }
+      });
+    } catch (error) {
+      print(error.toString());
+      data = null;
+    }
+    return data;
+  }
 }

@@ -176,7 +176,7 @@ class _DrawerScreenState extends State<DrawerScreen> {
     }
     Ticket lastTicket = Ticket(
         email: 'pippolippo@gmail.com',
-        mezzi: ['AL2BARI'],
+        mezzi: {"": 'AL2BARI'},
         buyDate: '16/11/2020',
         buyTime: '15:13:42',
         type: TicketType.NORMAL,
