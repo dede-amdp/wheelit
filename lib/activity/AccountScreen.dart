@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:wheelit/classes/DatabaseManager.dart';
+import 'package:wheelit/classes/Ticket.dart';
+import 'package:wheelit/activity/TicketScreen.dart';
 
 class AccountScreen extends StatefulWidget {
   @override
@@ -21,13 +23,13 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          elevation: 0.0,
-          backgroundColor: Colors.transparent,
-          iconTheme: IconThemeData(color: Colors.black)),
-      body: userData == null //se contiene solo un campo (l'email)
-          ? Center(child: CircularProgressIndicator()) //attende il fetch
-          : Align(
+        appBar: AppBar(
+            elevation: 0.0,
+            backgroundColor: Colors.transparent,
+            iconTheme: IconThemeData(color: Colors.black)),
+        body: userData == null //se contiene solo un campo (l'email)
+            ? Center(child: CircularProgressIndicator()) //attende il fetch
+            : /*Align(
               alignment: Alignment.topCenter,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(32.0, 0, 32.0, 0),
@@ -58,8 +60,20 @@ class _AccountScreenState extends State<AccountScreen> {
                     ),
                   ),
                 ),
-              )), //abbiamo i dati
-    );
+              )), //abbiamo i dati*/
+            Center(
+                child: RaisedButton(
+                    onPressed: () {
+                      DatabaseManager.setTicketData(Ticket(
+                          email: "pippolippo@gmail.com",
+                          used: false,
+                          mezzi: {"A": "B"},
+                          buyTime:
+                              TicketScreen.toLocalDateTime(DateTime.now())[1],
+                          buyDate:
+                              TicketScreen.toLocalDateTime(DateTime.now())[0]));
+                    },
+                    child: Text("DO NOT TOUCH PLS"))));
   }
 
   Future<void> getData(String userEmail) async {

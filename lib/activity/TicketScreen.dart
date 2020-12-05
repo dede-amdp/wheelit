@@ -7,20 +7,23 @@ class TicketScreen extends StatefulWidget {
   @override
   _TicketScreenState createState() => _TicketScreenState();
 
+  //Metodo usato per convertire DateTime in data e ora comprensibili da un utente
   static List toLocalDateTime(DateTime dt) {
     DateTime dateOriginal = DateTime.tryParse(dt.toString());
     List date = dateOriginal
-        .add(Duration(hours: dateOriginal.timeZoneOffset.inHours))
+        .add(Duration(
+            hours: dateOriginal
+                .timeZoneOffset.inHours)) //aggiungo l'offset del fusorario
         .toUtc()
         .toString()
         .split(" ");
-    return date;
+    return date; //il primo elemento è la data, il secondo è l'orario
   }
 }
 
 class _TicketScreenState extends State<TicketScreen> {
   List<Ticket> ticketList = [];
-  String userEmail = 'jhzvbjhasdbvhfsvg';
+  String userEmail = 'pippolippo@gmail.com';
 
   @override
   void initState() {

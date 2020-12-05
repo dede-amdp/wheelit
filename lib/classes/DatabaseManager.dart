@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:wheelit/classes/Ticket.dart';
 
 class DatabaseManager {
   static Future<Map<String, Map>> getUsersList() async {
@@ -56,7 +57,8 @@ class DatabaseManager {
           FirebaseFirestore.instance.collection('tickets');
       await ticketsCollection
           .where('user', isEqualTo: userEmail)
-          .orderBy('buyTimeStamp')
+          .orderBy('buyTimeStamp',
+              descending: true) //SE NON FUNZIONA: TOGLIERE DESCENDING
           .get()
           .then((values) {
         if (values != null) {
@@ -70,5 +72,39 @@ class DatabaseManager {
       data = null;
     }
     return data;
+  }
+
+  //TODO: PLS DO NOT USE THIS SHIT BECAUSE IS SHIT (bisogna farlo funzionare)
+  static Future<void> setTicketData(Ticket ticket) async {
+    await Firebase.initializeApp();
+    CollectionReference ticketsCollection =
+        FirebaseFirestore.instance.collection('tickets');
+    Map ticketMap = ticket.toMap();
+    Map toAdd = {};
+    if (ticket.type == TicketType.PASS) {
+      toAdd.addAll({
+        'startDate': (DateTime.parse('${ticketMap['startDate']}')
+                    .millisecondsSinceEpoch /
+                1000)
+            .toString(),
+        'endDate':
+            (DateTime.parse('${ticketMap['endDate']}').millisecondsSinceEpoch /
+                    1000)
+                .toString()
+      });
+    }
+    String timestamp =
+        (DateTime.parse('${ticketMap['buyDate']} ${ticketMap['buyTime']}')
+                    .millisecondsSinceEpoch /
+                1000)
+            .toString();
+    ticketsCollection.add({
+      'user': ticketMap['email'],
+      'public': ticket.mezzi,
+      'used': ticketMap['used'],
+      'buyTimeStamp': "Timestamp(seconds=$timestamp, nanoseconds=0)",
+      'type': ticketMap['type'] == TicketType.NORMAL ? "NORMAL" : "PASS"
+    });
+    //TODO: PLS DO NOT USE THIS SHIT BECAUSE IS SHIT (bisogna farlo funzionare)
   }
 }

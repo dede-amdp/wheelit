@@ -1,4 +1,5 @@
 import 'package:wheelit/activity/TicketScreen.dart';
+import 'package:meta/meta.dart';
 
 class Ticket {
   TicketType type;
@@ -11,42 +12,52 @@ class Ticket {
   Map mezzi;
 
   Ticket(
-      {this.email,
-      this.mezzi,
-      this.buyDate,
-      this.buyTime,
+      {@required this.email,
+      @required this.mezzi,
+      @required this.buyDate,
+      @required this.buyTime,
       this.startDate,
       this.endDate,
       this.type,
       this.used});
 
-  String toCode() {
+  Map toMap() {
     Map code = {
       'email': this.email,
       'buyDate': this.buyDate,
       'buyTime': this.buyTime,
-      'mezzi': this.mezzi.toString(),
+      'mezzi': this.mezzi,
       'used': this.used,
       'startDate': this.startDate,
       'endDate': this.endDate,
-      'type': this.type == TicketType.NORMAL ? "NORMAL" : "PASS",
+      'type': this.type
     };
-    return code.toString();
+    return code;
+  }
+
+  String toCode() {
+    Map m = toMap();
+    m['type'] = toMap()['type'] =
+        toMap()[type] == TicketType.NORMAL ? "NORMAL" : "PASS";
+    return m.toString();
   }
 
   static Ticket parseString(String ticketString) {
-    Ticket finalTicket = Ticket();
+    //Genera un Ticket da una stringa
+
+    Ticket finalTicket = Ticket(email: "", mezzi: {}, buyDate: "", buyTime: "");
     List<String> campi = ticketString
         .replaceAll('{', "")
         .replaceAll("}", "")
         .replaceAll(" ", "")
-        .split(",");
+        .split(","); //sostituiamo i caratteri inutili e dividiamo per campi
     campi.forEach((element) {
       switch (element.split(":")[0]) {
+        //la prima parte del campo è il suo nome: lo usiamo per capire a quale attributo assegnare il valore
         case 'user':
           finalTicket.email = element.split(":")[1];
           break;
-        case 'buyTimeStamp':
+        case 'buyTimeStamp': //Prende il numero di secondi (Epoch) e li converte in DateTime che poi è convertito in Data e ora dal metodo toLocalDateTime
           finalTicket.buyDate = TicketScreen.toLocalDateTime(
               DateTime.fromMillisecondsSinceEpoch(
                   int.parse(element.split(':')[1].split("(")[1].split('=')[1]) *
@@ -56,7 +67,7 @@ class Ticket {
                   int.parse(element.split(':')[1].split("(")[1].split('=')[1]) *
                       1000))[1];
           break;
-        case 'public':
+        case 'public': //converte la stringa di mezzi in una mappa di mezzi
           Map mz = {};
           element
               .replaceFirst(":", "/")
@@ -70,13 +81,13 @@ class Ticket {
         case 'used':
           finalTicket.used = element.split(":")[1] == "true";
           break;
-        case 'startDate':
+        case 'startDate': //Come per buyTimeStamp
           finalTicket.startDate = TicketScreen.toLocalDateTime(
               DateTime.fromMillisecondsSinceEpoch(
                   int.parse(element.split(':')[1].split("(")[1].split('=')[1]) *
                       1000))[0];
           break;
-        case 'endDate':
+        case 'endDate': //Come per buyTimeStamp
           finalTicket.endDate = TicketScreen.toLocalDateTime(
               DateTime.fromMillisecondsSinceEpoch(
                   int.parse(element.split(':')[1].split("(")[1].split('=')[1]) *
