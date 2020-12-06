@@ -32,15 +32,8 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 GoogleMap(
                   initialCameraPosition: CameraPosition(
-                      zoom: 2, target: LatLng(41.092724, 16.852686)),
+                      zoom: 15, target: LatLng(41.092724, 16.852686)),
                 ),
-                //Placeholder(color: Colors.red),
-                /*Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  child:
-                      Image.asset('assets/images/truffa.png', fit: BoxFit.fill),
-                ),*/
                 SafeArea(
                   child: Align(
                       alignment: Alignment.topLeft,
