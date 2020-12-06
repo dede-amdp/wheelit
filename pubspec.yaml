@@ -35,7 +35,8 @@ dev_dependencies:
   flutter_launcher_icons: ^0.8.1
   qr_flutter: ^3.2.0
   cloud_firestore: ^0.14.3+1
-  #firebase: ^7.3.2
+  google_maps_flutter: ^0.4.0
+  #google_maps: ^3.4.5
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

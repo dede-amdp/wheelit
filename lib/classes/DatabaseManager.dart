@@ -74,37 +74,59 @@ class DatabaseManager {
     return data;
   }
 
-  //TODO: PLS DO NOT USE THIS SHIT BECAUSE IS SHIT (bisogna farlo funzionare)
   static Future<void> setTicketData(Ticket ticket) async {
     await Firebase.initializeApp();
     CollectionReference ticketsCollection =
         FirebaseFirestore.instance.collection('tickets');
     Map ticketMap = ticket.toMap();
-    Map toAdd = {};
     if (ticket.type == TicketType.PASS) {
-      toAdd.addAll({
-        'startDate': (DateTime.parse('${ticketMap['startDate']}')
-                    .millisecondsSinceEpoch /
-                1000)
-            .toString(),
-        'endDate':
-            (DateTime.parse('${ticketMap['endDate']}').millisecondsSinceEpoch /
-                    1000)
-                .toString()
+      ticketsCollection.add({
+        'user': ticketMap['email'],
+        'public': ticket.mezzi,
+        'used': ticketMap['used'],
+        'buyTimeStamp':
+            DateTime.parse('${ticketMap['buyDate']} ${ticketMap['buyTime']}'),
+        'type': "PASS",
+        'startDate': DateTime.parse(ticketMap['startDate']),
+        'endDate': DateTime.parse(ticketMap['endDate']),
+      });
+    } else {
+      ticketsCollection.add({
+        'user': ticketMap['email'],
+        'public': ticket.mezzi,
+        'used': ticketMap['used'],
+        'buyTimeStamp':
+            DateTime.parse('${ticketMap['buyDate']} ${ticketMap['buyTime']}'),
+        'type': "NORMAL"
       });
     }
-    String timestamp =
-        (DateTime.parse('${ticketMap['buyDate']} ${ticketMap['buyTime']}')
-                    .millisecondsSinceEpoch /
-                1000)
-            .toString();
-    ticketsCollection.add({
-      'user': ticketMap['email'],
-      'public': ticket.mezzi,
-      'used': ticketMap['used'],
-      'buyTimeStamp': "Timestamp(seconds=$timestamp, nanoseconds=0)",
-      'type': ticketMap['type'] == TicketType.NORMAL ? "NORMAL" : "PASS"
-    });
-    //TODO: PLS DO NOT USE THIS SHIT BECAUSE IS SHIT (bisogna farlo funzionare)
+  }
+
+  static Future<Map> getTransportData({bool public = false}) async {
+    await Firebase.initializeApp();
+    Map data = {};
+    CollectionReference transportCollection =
+        FirebaseFirestore.instance.collection(public ? 'public' : 'electric');
+    if (public) {
+      await transportCollection.get().then((value) {
+        if (value != null) {
+          value.docs.forEach((mezzo) {
+            data.addAll({mezzo.id: mezzo.data()});
+          });
+        }
+      });
+    } else {
+      await transportCollection
+          .where('state', isEqualTo: "FREE")
+          .get()
+          .then((value) {
+        if (value != null) {
+          value.docs.forEach((mezzo) {
+            data.addAll({mezzo.id: mezzo.data()});
+          });
+        }
+      });
+    }
+    return data;
   }
 }
