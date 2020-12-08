@@ -17,78 +17,112 @@ class _HomeScreenState extends State<HomeScreen> {
   Ticket recent;
   String userEmail = 'pippolippo@gmail.com';
   LatLng userLocation;
+  GoogleMapController _gmc;
+  TransportType filterType;
 
   @override
   void initState() {
-    getData();
     getLocation();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return mezzi == null || userLocation == null
-        ? Scaffold(body: Center(child: CircularProgressIndicator()))
-        : Scaffold(
-            drawer: Drawer(child: DrawerScreen()),
-            body: Builder(
-              builder: (context) {
-                return Stack(
-                  children: [
-                    GoogleMap(
-                      myLocationEnabled: true,
-                      markers: Set.from(mezzi.entries.map((e) {
-                        return e.value['state'] != "FREE"
-                            ? null
-                            : Marker(
-                                markerId: MarkerId(e.key),
-                                position: LatLng(e.value['position'].latitude,
-                                    e.value['position'].longitude));
-                      })),
-                      initialCameraPosition:
-                          CameraPosition(zoom: 15, target: userLocation),
-                    ),
-                    SafeArea(
+    if (mezzi == null || userLocation == null) {
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    } else {
+      Set markers = Set<Marker>.from(mezzi.entries.map((e) {
+        return Marker(
+            markerId: MarkerId(e.key),
+            position: LatLng(
+                e.value['position'].latitude, e.value['position'].longitude));
+      }));
+      markers.add(Marker(
+        markerId: MarkerId("user"),
+        position: userLocation,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+      ));
+      return Scaffold(
+          drawer: Drawer(child: DrawerScreen()),
+          body: Builder(
+            builder: (context) {
+              return Stack(
+                children: [
+                  GoogleMap(
+                    onMapCreated: (gmc) {
+                      _gmc = gmc;
+                    },
+                    markers: markers,
+                    initialCameraPosition:
+                        CameraPosition(zoom: 15, target: userLocation),
+                  ),
+                  SafeArea(
+                    child: Align(
+                        alignment: Alignment.topLeft,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            IconButton(
+                                iconSize: 32.0,
+                                icon: Icon(
+                                  Icons.menu,
+                                  color: Theme.of(context).accentColor,
+                                ),
+                                onPressed: () {
+                                  Scaffold.of(context).openDrawer();
+                                }),
+                            SearchBar(),
+                            FloatingActionButton(
+                              child: Icon(Icons.location_searching,
+                                  color: Colors.white),
+                              onPressed: () {
+                                _gmc.moveCamera(CameraUpdate.newCameraPosition(
+                                    CameraPosition(
+                                        target: userLocation, zoom: 15)));
+                              },
+                            )
+                          ],
+                        )),
+                  ),
+                  SafeArea(
                       child: Align(
-                          alignment: Alignment.topLeft,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              IconButton(
-                                  iconSize: 32.0,
-                                  icon: Icon(
-                                    Icons.menu,
-                                    color: Theme.of(context).accentColor,
-                                  ),
-                                  onPressed: () {
-                                    Scaffold.of(context).openDrawer();
-                                  }),
-                              SearchBar(),
-                            ],
-                          )),
-                    ),
-                    SafeArea(
-                        child: Align(
-                            alignment: Alignment.bottomCenter,
-                            child: BottomBar()))
-                  ],
-                );
-              },
-            ));
+                          alignment: Alignment.bottomCenter,
+                          child: BottomBar(functions: [
+                            filterPerType(),
+                            filterPerType(transportType: TransportType.BIKE),
+                            filterPerType(transportType: TransportType.SCOOTER),
+                            filterPerType(
+                                transportType: TransportType.BUS_STATION),
+                          ])))
+                ],
+              );
+            },
+          ));
+    }
   }
 
-  Future<void> getData() async {
-    Map mezziMap = await DatabaseManager.getTransportData(public: false);
-    setState(() {
-      this.mezzi = mezziMap;
-    });
+  Function filterPerType({TransportType transportType}) {
+    return () async {
+      setState(() {
+        filterType = transportType;
+        getData();
+      });
+    };
+  }
+
+  Future<Map> getData() async {
+    Map mezziMap = await DatabaseManager.getNearestTransport(userLocation,
+        transportType: filterType);
+    return mezziMap;
   }
 
   Future<void> getLocation() async {
     Location l = Location();
-    l.onLocationChanged().listen((loc) {
+    l.onLocationChanged().listen((loc) async {
+      Map mez = await getData();
       setState(() {
         userLocation = LatLng(loc.latitude, loc.longitude);
+        this.mezzi = mez;
       });
     });
   }

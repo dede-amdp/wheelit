@@ -1,21 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:meta/meta.dart';
+import 'package:wheelit/classes/Transport.dart';
 
-class BottomBar extends StatefulWidget {
-  @override
-  _BottomBarState createState() => _BottomBarState();
-}
-
-class _BottomBarState extends State<BottomBar> {
-  List<Map> _buttons = [
-    {'child': Text("ALL", style: TextStyle(color: Colors.white)), 'f': () {}},
-    {'child': Icon(Icons.electric_bike, color: Colors.white), 'f': () {}},
-    {'child': Icon(Icons.electric_scooter, color: Colors.white), 'f': () {}},
-    {'child': Icon(Icons.directions_bus, color: Colors.white), 'f': () {}},
-    {'child': Icon(Icons.train, color: Colors.white), 'f': () {}},
-  ];
+class BottomBar extends StatelessWidget {
+  List<Function> functions = [];
+  BottomBar({@required this.functions});
 
   @override
   Widget build(BuildContext context) {
+    List<Map> _buttons = [
+      {
+        'child': Text("ALL", style: TextStyle(color: Colors.white)),
+        'f': this.functions[0]
+      },
+      {
+        'child': Icon(Icons.electric_bike, color: Colors.white),
+        'f': this.functions[1]
+      },
+      {
+        'child': Icon(Icons.electric_scooter, color: Colors.white),
+        'f': this.functions[2]
+      },
+      {
+        'child': Row(children: [
+          Icon(Icons.directions_bus, color: Colors.white),
+          Icon(Icons.directions_train, color: Colors.white)
+        ]),
+        'f': this.functions[3]
+      },
+    ];
     return Container(
       height: 50,
       child: ListView(
