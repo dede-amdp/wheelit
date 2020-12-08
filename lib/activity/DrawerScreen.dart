@@ -71,6 +71,7 @@ class _DrawerScreenState extends State<DrawerScreen> {
     //lista di mezzi ELETTRICI
     //Prendi i dati e mettili in ordine di distanza e carica
     mezziMap = sortByDistance(mezziMap, userLocation);
+    mezziMap = removeTooFar(mezziMap, userLocation);
     //prendi i primi 3
     for (int i = 0; i < 3 && i < mezziMap.entries.length; i++) {
       Map value = mezziMap;
@@ -108,7 +109,7 @@ class _DrawerScreenState extends State<DrawerScreen> {
               isThreeLine: true,
               title: Text('${mezzo.code}'),
               subtitle: Text(
-                  '${mezzo.transportTypetoString()}\ndistance:\t${getDistance(LatLng(value.entries.toList()[i].value['position'].latitude, value.entries.toList()[i].value['position'].longitude), LatLng(userLocation.latitude, userLocation.longitude))}'),
+                  '${mezzo.transportTypetoString()}\ndistance:\t${((getDistance(LatLng(value.entries.toList()[i].value['position'].latitude, value.entries.toList()[i].value['position'].longitude), LatLng(userLocation.latitude, userLocation.longitude)))).ceil() / 1000} km'),
               leading: mezzo.type == TransportType.BIKE
                   ? Icon(Icons.electric_bike, color: Colors.black)
                   : Icon(Icons.electric_scooter, color: Colors.black))));
@@ -150,6 +151,19 @@ class _DrawerScreenState extends State<DrawerScreen> {
     return Geolocator.distanceBetween(
             from.latitude, from.longitude, to.latitude, to.longitude)
         .abs();
+  }
+
+  Map removeTooFar(Map toRemove, LatLng target) {
+    Map toReturn = {};
+    toRemove.forEach((key, value) {
+      if (getDistance(
+              LatLng(value['position'].latitude, value['position'].longitude),
+              target) <=
+          2000) {
+        toReturn.addAll({key: value});
+      }
+    });
+    return toReturn;
   }
 
   Map sortByDistance(Map toOrder, LatLng target) {

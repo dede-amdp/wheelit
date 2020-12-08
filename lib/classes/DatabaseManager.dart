@@ -145,7 +145,7 @@ class DatabaseManager {
   static Future<Map> getNearestTransport(LatLng userPosition,
       {TransportType transportType}) async {
     Map data = {};
-    int distance = 200000;
+    int distance = 2000;
     await Firebase.initializeApp();
     try {
       CollectionReference eleCollection =
