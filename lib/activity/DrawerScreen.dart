@@ -28,7 +28,7 @@ class _DrawerScreenState extends State<DrawerScreen> {
   @override
   void initState() {
     getTicketButton();
-    getNearest();
+    getLocation();
     super.initState();
     //getOptions(context);
   }
@@ -111,22 +111,26 @@ class _DrawerScreenState extends State<DrawerScreen> {
     });
   }
 
+  Future<void> getLocation() async {
+    Location().getLocation().then((value) async {
+      setState(() {
+        userLocation = LatLng(value.latitude, value.longitude);
+        getNearest();
+      });
+    });
+  }
+
   Future<void> getNearest() async {
     List<Transport> nearestM = [];
-    LatLng userPosition;
-    await Location().getLocation().then((value) {
-      userPosition = LatLng(value.latitude, value.longitude);
-    });
     Map mezzi = await DatabaseManager.getTransportData(public: false);
-    mezzi = sortByDistance(mezzi, userPosition);
-    mezzi = removeTooFar(mezzi, userPosition);
+    mezzi = removeTooFar(mezzi, this.userLocation);
+    mezzi = sortByDistance(mezzi, this.userLocation);
     List l = mezzi.entries.toList();
     for (int i = 0; i < 3 && i < l.length; i++) {
       nearestM.add(Transport.parseString(l[i].key, l[i].value));
     }
     setState(() {
       this.nearest = nearestM;
-      this.userLocation = userPosition;
     });
   }
 
