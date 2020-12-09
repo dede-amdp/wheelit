@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
-import 'package:wheelit/classes/Transport.dart';
 
 class BottomBar extends StatelessWidget {
   List<Function> functions = [];

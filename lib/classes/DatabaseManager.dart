@@ -4,6 +4,8 @@ import 'package:wheelit/classes/Ticket.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:wheelit/classes/Transport.dart';
+import 'package:location/location.dart';
+import 'package:meta/meta.dart';
 
 class DatabaseManager {
   static Future<Map<String, Map>> getUsersList() async {
@@ -152,21 +154,26 @@ class DatabaseManager {
           FirebaseFirestore.instance.collection('electric');
       CollectionReference pubCollection =
           FirebaseFirestore.instance.collection('stations');
-      await eleCollection.where('state', isEqualTo: "FREE").get().then((value) {
-        if (value != null) {
-          value.docs.forEach((electric) {
-            if (Geolocator.distanceBetween(
-                        userPosition.latitude,
-                        userPosition.longitude,
-                        electric.data()['position'].latitude,
-                        electric.data()['position'].longitude)
-                    .abs() <=
-                distance) {
-              data.addAll({electric.id: electric.data()});
-            }
-          });
-        }
-      });
+      if (userPosition != null) {
+        await eleCollection
+            .where('state', isEqualTo: "FREE")
+            .get()
+            .then((value) {
+          if (value != null) {
+            value.docs.forEach((electric) {
+              if (Geolocator.distanceBetween(
+                          userPosition.latitude,
+                          userPosition.longitude,
+                          electric.data()['position'].latitude,
+                          electric.data()['position'].longitude)
+                      .abs() <=
+                  distance) {
+                data.addAll({electric.id: electric.data()});
+              }
+            });
+          }
+        });
+      }
       await pubCollection.get().then((stations) {
         if (stations != null) {
           stations.docs.forEach((station) {
@@ -204,5 +211,44 @@ class DatabaseManager {
       data = filtered;
     }
     return data;
+  }
+
+  static Future<void> getRealTimeTransportData(
+      {@required Function onChange, @required Map toChange}) async {
+    LatLng userLocation;
+    Location().onLocationChanged().listen((event) async {
+      userLocation = LatLng(event.latitude, event.longitude);
+    });
+    toChange = await getNearestTransport(userLocation);
+    await Firebase.initializeApp();
+    //Setto i listener:
+    CollectionReference eleCollection =
+        FirebaseFirestore.instance.collection('electric');
+    try {
+      eleCollection.snapshots().listen((changes) {
+        changes.docChanges.forEach((changedDoc) {
+          double distance = Geolocator.distanceBetween(
+                  changedDoc.doc.data()['position'].latitude,
+                  changedDoc.doc.data()['position'].longitude,
+                  userLocation.latitude,
+                  userLocation.longitude)
+              .abs();
+          if (distance <= 2000) {
+            if (changedDoc.doc.data()['state'] != 'FREE') {
+              toChange.remove(changedDoc.doc.id);
+            } else {
+              toChange.update(
+                  changedDoc.doc.id, (value) => changedDoc.doc.data(),
+                  ifAbsent: () => changedDoc.doc.data());
+            }
+          } else {
+            toChange.remove(changedDoc.doc.id);
+          }
+          onChange(toChange);
+        });
+      });
+    } catch (error) {
+      print(error.toString());
+    }
   }
 }

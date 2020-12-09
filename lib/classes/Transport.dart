@@ -27,17 +27,21 @@ class Transport {
 
   static Transport parseString(String id, Map toParse) {
     Transport mezzo = Transport(code: id);
-    print(toParse);
     String latlng =
-        '[${toParse['position'].latitude}, ${toParse['position'].longitude}]';
-    List campi = toParse.toString().split(",");
+        '${toParse['position'].latitude}, ${toParse['position'].longitude}';
+    List campi = toParse
+        .toString()
+        .replaceAll('{', "")
+        .replaceAll('}', "")
+        .replaceAll(" ", "")
+        .split(",");
     campi.forEach((campo) {
       switch (campo.split(":")[0]) {
         case 'battery':
-          mezzo.battery = int.parse(campo.split(":")[1]);
+          mezzo.battery = double.parse(campo.split(":")[1]).floor();
           break;
         case 'position':
-          mezzo.position = '[$latlng]';
+          mezzo.position = '$latlng';
           break;
         case 'price':
           mezzo.price = double.parse(campo.split(":")[1]);

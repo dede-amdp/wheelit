@@ -23,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     getLocation();
+    getData();
     super.initState();
   }
 
@@ -43,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
       ));
       return Scaffold(
-          drawer: Drawer(child: DrawerScreen()),
+          drawer: Drawer(child: DrawerScreen(_gmc)),
           body: Builder(
             builder: (context) {
               return Stack(
@@ -110,19 +111,21 @@ class _HomeScreenState extends State<HomeScreen> {
     };
   }
 
-  Future<Map> getData() async {
-    Map mezziMap = await DatabaseManager.getNearestTransport(userLocation,
-        transportType: filterType);
-    return mezziMap;
+  Future<void> getData() async {
+    Function updateMap = (Map toAdd) {
+      setState(() {
+        this.mezzi = toAdd;
+      });
+    };
+    DatabaseManager.getRealTimeTransportData(
+        onChange: updateMap, toChange: this.mezzi);
   }
 
   Future<void> getLocation() async {
     Location l = Location();
-    l.onLocationChanged().listen((loc) async {
-      Map mez = await getData();
+    l.onLocationChanged().listen((loc) {
       setState(() {
         userLocation = LatLng(loc.latitude, loc.longitude);
-        this.mezzi = mez;
       });
     });
   }

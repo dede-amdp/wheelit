@@ -7,30 +7,74 @@ import 'package:location/location.dart';
 import 'package:geolocator/geolocator.dart';
 
 class DrawerScreen extends StatefulWidget {
-  Map mezzi;
-  DrawerScreen({this.mezzi});
-
+  GoogleMapController gmc;
+  DrawerScreen(this.gmc);
   @override
-  _DrawerScreenState createState() => _DrawerScreenState(this.mezzi);
+  _DrawerScreenState createState() => _DrawerScreenState(this.gmc);
 }
 
 class _DrawerScreenState extends State<DrawerScreen> {
-  List<Widget> options = [Center(child: CircularProgressIndicator())];
+  //List<Widget> options = [Center(child: CircularProgressIndicator())];
+  Ticket lastTicket;
+  List<Transport> nearest = [];
   String userEmail = 'pippolippo@gmail.com';
-  Map mezzi;
+  GoogleMapController gmc;
+  LatLng userLocation;
 
-  _DrawerScreenState(Map mezzi) {
-    this.mezzi = mezzi;
+  _DrawerScreenState(GoogleMapController gmc) {
+    this.gmc = gmc;
   }
 
   @override
   void initState() {
+    getTicketButton();
+    getNearest();
     super.initState();
-    getOptions(context);
+    //getOptions(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    List options = <Widget>[];
+    if (nearest != null) {
+      nearest.forEach((element) {
+        LatLng target = LatLng(double.parse(element.position.split(',')[0]),
+            double.parse(element.position.split(',')[1]));
+        options.add(Card(
+            child: ListTile(
+                leading: Icon(element.type == TransportType.BIKE
+                    ? Icons.electric_bike
+                    : Icons.electric_scooter),
+                title: Row(children: [
+                  Icon(Icons.battery_full, color: Colors.green),
+                  Text('${element.battery.toString()}%'),
+                  Text(
+                      '\t${getDistance(target, userLocation).floor()} m from you')
+                ]),
+                onTap: () {
+                  gmc.moveCamera(CameraUpdate.newCameraPosition(
+                      CameraPosition(target: target, zoom: 17)));
+                  Navigator.pop(context);
+                })));
+      });
+    }
+    if (lastTicket != null) {
+      List datelist = this.lastTicket.buyDate.split("-");
+      String data = "${datelist[2]}/${datelist[1]}/${datelist[0]}";
+      options.add(Card(
+          color: Theme.of(context).accentColor,
+          child: ListTile(
+              onTap: () {
+                Navigator.pushNamed(context, '/ticket');
+              },
+              leading: Icon(Icons.description, color: Colors.white),
+              title: Text(
+                  "Ticket bought on $data at ${this.lastTicket.buyTime.substring(0, 5)}",
+                  style: TextStyle(color: Colors.white)))));
+    }
+    if (options.isEmpty) {
+      options.add(Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       body: Column(
         children: [
@@ -59,91 +103,30 @@ class _DrawerScreenState extends State<DrawerScreen> {
     );
   }
 
-  Future<void> getOptions(BuildContext context) async {
-    LatLng userLocation;
-    List<Widget> opts = [];
-    Location l = Location();
-    await l.onLocationChanged().first.then(
-        (value) => userLocation = LatLng(value.latitude, value.longitude));
-    //SIMULAZIONE DI FETCHING DEI 3 MEZZI PIù VICINI & ULTIMO BLIGLIETTO
-    Map mezziMap = await DatabaseManager.getTransportData();
-    print("DEBUG: $mezziMap");
-    //lista di mezzi ELETTRICI
-    //Prendi i dati e mettili in ordine di distanza e carica
-    mezziMap = sortByDistance(mezziMap, userLocation);
-    mezziMap = removeTooFar(mezziMap, userLocation);
-    //prendi i primi 3
-    for (int i = 0; i < 3 && i < mezziMap.entries.length; i++) {
-      Map value = mezziMap;
-      Transport mezzo = Transport.parseString(
-          value.entries.toList()[i].key, value.entries.toList()[i].value);
-      opts.add(Card(
-          child: ListTile(
-              //NON CANCELLARE: IMPLEMENTAZIONE DELLA SNACKBAR IN CASO DI TELE-AFFITTO
-              onTap: () {
-                Scaffold.of(context).showSnackBar(SnackBar(
-                    backgroundColor: Colors.white,
-                    duration: Duration(minutes: 5),
-                    action: SnackBarAction(label: "Rent", onPressed: () {}),
-                    content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text('Do you want to rent?',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                  fontSize: 24.0)),
-                          Text(
-                            "Type: \t ${mezzo.type == TransportType.BIKE ? 'Bike' : 'Scooter'}",
-                            style:
-                                TextStyle(color: Colors.black, fontSize: 24.0),
-                          ),
-                          Text("Price:\t${mezzo.price}/min",
-                              style: TextStyle(
-                                  color: Colors.black, fontSize: 24.0)),
-                        ])));
-                Navigator.pop(context);
-              },
-              //FINE ZONA DA NON CANCELLARE
-              isThreeLine: true,
-              title: Text('${mezzo.code}'),
-              subtitle: Text(
-                  '${mezzo.transportTypetoString()}\ndistance:\t${((getDistance(LatLng(value.entries.toList()[i].value['position'].latitude, value.entries.toList()[i].value['position'].longitude), LatLng(userLocation.latitude, userLocation.longitude)))).ceil() / 1000} km'),
-              leading: mezzo.type == TransportType.BIKE
-                  ? Icon(Icons.electric_bike, color: Colors.black)
-                  : Icon(Icons.electric_scooter, color: Colors.black))));
-    }
-    //inserisci biglietto e abbonamento più recente
-    await DatabaseManager.getTicketData(userEmail).then((value) {
-      Ticket recent = Ticket.parseString(value['0'].toString());
+  Future<void> getTicketButton() async {
+    Ticket recent = Ticket.parseString(
+        (await DatabaseManager.getTicketData(userEmail))['0'].toString());
+    setState(() {
+      this.lastTicket = recent;
+    });
+  }
 
-      opts.add(Card(
-        child: Container(
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  colors: [Colors.tealAccent[700], Colors.white],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight)),
-          child: ListTile(
-              isThreeLine: true,
-              title: Text(
-                  "Recentrly made: ${recent.type == TicketType.NORMAL ? '' : 'Pass'} Ticket"),
-              leading: Icon(Icons.description, color: Colors.white),
-              subtitle: Text(
-                  recent.buyDate +
-                      "\tat\t" +
-                      recent.buyTime +
-                      "\tfor:\n ${recent.mezzi.toString()}",
-                  style: TextStyle(color: Colors.black)),
-              onTap: () {
-                Navigator.pushNamed(context, '/ticket');
-              }),
-        ),
-      ));
-      setState(() {
-        this.options = opts;
-      });
+  Future<void> getNearest() async {
+    List<Transport> nearestM = [];
+    LatLng userPosition;
+    await Location().getLocation().then((value) {
+      userPosition = LatLng(value.latitude, value.longitude);
+    });
+    Map mezzi = await DatabaseManager.getTransportData(public: false);
+    mezzi = sortByDistance(mezzi, userPosition);
+    mezzi = removeTooFar(mezzi, userPosition);
+    List l = mezzi.entries.toList();
+    for (int i = 0; i < 3 && i < l.length; i++) {
+      nearestM.add(Transport.parseString(l[i].key, l[i].value));
+    }
+    setState(() {
+      this.nearest = nearestM;
+      this.userLocation = userPosition;
     });
   }
 
