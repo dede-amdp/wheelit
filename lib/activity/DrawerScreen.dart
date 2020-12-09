@@ -36,6 +36,20 @@ class _DrawerScreenState extends State<DrawerScreen> {
   @override
   Widget build(BuildContext context) {
     List options = <Widget>[];
+    if (lastTicket != null) {
+      List datelist = this.lastTicket.buyDate.split("-");
+      String data = "${datelist[2]}/${datelist[1]}/${datelist[0]}";
+      options.add(Card(
+          color: Theme.of(context).accentColor,
+          child: ListTile(
+              onTap: () {
+                Navigator.pushNamed(context, '/ticket');
+              },
+              leading: Icon(Icons.description, color: Colors.white),
+              title: Text(
+                  "Ticket bought on $data at ${this.lastTicket.buyTime.substring(0, 5)}",
+                  style: TextStyle(color: Colors.white)))));
+    }
     if (nearest != null) {
       nearest.forEach((element) {
         LatLng target = LatLng(double.parse(element.position.split(',')[0]),
@@ -58,21 +72,7 @@ class _DrawerScreenState extends State<DrawerScreen> {
                 })));
       });
     }
-    if (lastTicket != null) {
-      List datelist = this.lastTicket.buyDate.split("-");
-      String data = "${datelist[2]}/${datelist[1]}/${datelist[0]}";
-      options.add(Card(
-          color: Theme.of(context).accentColor,
-          child: ListTile(
-              onTap: () {
-                Navigator.pushNamed(context, '/ticket');
-              },
-              leading: Icon(Icons.description, color: Colors.white),
-              title: Text(
-                  "Ticket bought on $data at ${this.lastTicket.buyTime.substring(0, 5)}",
-                  style: TextStyle(color: Colors.white)))));
-    }
-    if (options.isEmpty) {
+    if (options.isEmpty || options.length <= 1) {
       options.add(Center(child: CircularProgressIndicator()));
     }
     return Scaffold(

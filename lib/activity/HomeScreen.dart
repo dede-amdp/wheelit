@@ -106,7 +106,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return () async {
       setState(() {
         filterType = transportType;
-        getData();
       });
     };
   }
