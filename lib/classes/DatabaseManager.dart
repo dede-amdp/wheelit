@@ -253,4 +253,29 @@ class DatabaseManager {
       print(error.toString());
     }
   }
+
+  static Future<void> setStartRent(
+      {@required String userEmail, @required String transportCode}) async {
+    await Firebase.initializeApp();
+    CollectionReference rentCollection =
+        FirebaseFirestore.instance.collection('rented');
+    CollectionReference eleCollection =
+        FirebaseFirestore.instance.collection('electric');
+    rentCollection.add({
+      'electric': transportCode,
+      'user': userEmail,
+      'startRent': DateTime.now().toString()
+    });
+    eleCollection.doc(transportCode).update({'state': 'RENTED'});
+  }
+
+  static Future<Map> getTransportInfo(String transportCode) async {
+    await Firebase.initializeApp();
+    CollectionReference eleCollection =
+        FirebaseFirestore.instance.collection('electric');
+    return await eleCollection
+        .doc(transportCode)
+        .get()
+        .then((value) => {value.id: value.data()});
+  }
 }

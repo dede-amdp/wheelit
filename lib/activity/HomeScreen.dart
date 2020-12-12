@@ -23,15 +23,14 @@ class _HomeScreenState extends State<HomeScreen> {
   TransportType filterType;
   Ticket lastTicket;
   List toShowInDrawer;
-  //TextEditingController _searchController = TextEditingController();
-  //List searchResult;
   List searchResults;
   List<String> searchOptionList = [];
-  String qr="";
-  String getQr="";
+  String qr = "";
+  String getQr = "";
 
-  Future scanQrCode() async {
-    getQr = await FlutterBarcodeScanner.scanBarcode("#ffffff", "INDIETRO", true, ScanMode.QR);
+  Future<void> scanQrCode() async {
+    getQr = await FlutterBarcodeScanner.scanBarcode(
+        "#ffffff", "INDIETRO", true, ScanMode.QR);
     setState(() {
       floatingRent(getQr);
     });
@@ -82,24 +81,28 @@ class _HomeScreenState extends State<HomeScreen> {
       ));
       List options = <Widget>[
         DrawerHeader(
-            child: FlatButton(
-                child: Align(
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(userEmail,
-                              overflow: TextOverflow.clip,
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 16)),
-                          IconButton(
-                              onPressed: () {},
-                              icon: Icon(Icons.logout, color: Colors.white))
-                        ]),
-                    alignment: Alignment.bottomLeft),
-                onPressed: () {
-                  Navigator.pushNamed(context, '/account');
-                }),
-            decoration: BoxDecoration(color: Theme.of(context).accentColor)),
+          decoration: BoxDecoration(
+              color: Theme.of(context).accentColor,
+              image: DecorationImage(
+                  image: AssetImage('assets/images/DrawerHeaderImage.jpg'))),
+          child: FlatButton(
+              child: Align(
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(userEmail,
+                            overflow: TextOverflow.clip,
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 16)),
+                        IconButton(
+                            onPressed: () {},
+                            icon: Icon(Icons.logout, color: Colors.white))
+                      ]),
+                  alignment: Alignment.bottomLeft),
+              onPressed: () {
+                Navigator.pushNamed(context, '/account');
+              }),
+        ),
         Card(
             child: ListTile(
                 leading: Icon(Icons.description, color: Colors.white),
@@ -139,6 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       return Scaffold(
           drawer: Drawer(child: ListView(children: options)),
+          //endDrawer: Drawer(),
           body: Builder(
             builder: (context) {
               return Stack(
@@ -168,15 +172,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Scaffold.of(context).openDrawer();
                                 }),
                             SearchBar(onSearch: search, onSubmit: find),
-                            FloatingActionButton(
-                              child: Icon(Icons.location_searching,
-                                  color: Colors.white),
-                              onPressed: () {
-                                _gmc.animateCamera(
-                                    CameraUpdate.newCameraPosition(
-                                        CameraPosition(
-                                            target: userLocation, zoom: 15)));
-                              },
+                            SizedBox(
+                              width: 55.0,
+                              height: 55.0,
+                              child: RaisedButton(
+                                color: Theme.of(context).accentColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30.0),
+                                ),
+                                child: Icon(Icons.location_searching,
+                                    color: Colors.white),
+                                onPressed: () {
+                                  _gmc.animateCamera(
+                                      CameraUpdate.newCameraPosition(
+                                          CameraPosition(
+                                              target: userLocation, zoom: 15)));
+                                },
+                              ),
                             ),
                             SizedBox(
                               width: 55.0,
@@ -188,8 +200,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 child: Icon(Icons.qr_code_scanner_rounded,
                                     color: Colors.white),
-                                onPressed: () {scanQrCode();},
-                              ),),
+                                onPressed: () {
+                                  scanQrCode();
+                                },
+                              ),
+                            ),
                           ],
                         )),
                   ),
@@ -210,25 +225,29 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  AlertDialog floatingRent(String qr) {
+  void floatingRent(String qr) async {
     if (qr != "" && qr != "-1") {
-      showDialog(context: context,
+      String toShow = (await DatabaseManager.getTransportInfo(qr))[qr]
+              ['battery']
+          .toString();
+      showDialog(
+          context: context,
           builder: (context) {
             return AlertDialog(
-              title: Text(qr),
+              title: Text(toShow),
               actions: <Widget>[
                 MaterialButton(
                   elevation: 5.0,
                   child: Text("RENT"),
                   onPressed: () {
+                    DatabaseManager.setStartRent(
+                        userEmail: this.userEmail, transportCode: qr);
+                    Navigator.pop(context);
                   },
                 )
               ],
             );
-          }
-      );
-    } else {
-      return null;
+          });
     }
   }
 
