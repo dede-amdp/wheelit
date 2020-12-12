@@ -1,11 +1,12 @@
+import 'dart:math';
 import 'package:wheelit/classes/Transport.dart';
 import 'package:flutter/material.dart';
 import 'package:wheelit/classes/Ticket.dart';
 import 'package:wheelit/classes/DatabaseManager.dart';
-import 'package:wheelit/activity/DrawerScreen.dart';
 import 'package:wheelit/classes/BottomBar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:geolocator/geolocator.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -19,20 +20,46 @@ class _HomeScreenState extends State<HomeScreen> {
   LatLng userLocation;
   GoogleMapController _gmc;
   TransportType filterType;
+  Ticket lastTicket;
+  List toShowInDrawer;
+  //TextEditingController _searchController = TextEditingController();
+  //List searchResult;
+  List searchResults;
+  List<String> searchOptionList = [];
 
   @override
   void initState() {
     getLocation();
     getData();
+    getTicketButton();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    Map toShow = {};
     if (mezzi == null || userLocation == null) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     } else {
-      Set markers = Set<Marker>.from(mezzi.entries.map((e) {
+      sortNearestforDrawer();
+      if (filterType != null) {
+        String typeString = filterType == TransportType.BIKE
+            ? 'BIKE'
+            : filterType == TransportType.SCOOTER
+                ? 'SCOOTER'
+                : filterType == TransportType.BUS_STATION ||
+                        filterType == TransportType.TRAIN_STATION
+                    ? 'STATION'
+                    : '';
+        this.mezzi.forEach((key, value) {
+          if (value['type'] == typeString) {
+            toShow.addAll({key: value});
+          }
+        });
+      } else {
+        toShow = this.mezzi;
+      }
+      Set markers = Set<Marker>.from(toShow.entries.map((e) {
         return Marker(
             markerId: MarkerId(e.key),
             position: LatLng(
@@ -43,8 +70,65 @@ class _HomeScreenState extends State<HomeScreen> {
         position: userLocation,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
       ));
+      List options = <Widget>[
+        DrawerHeader(
+            child: FlatButton(
+                child: Align(
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(userEmail,
+                              overflow: TextOverflow.clip,
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 16)),
+                          IconButton(
+                              onPressed: () {},
+                              icon: Icon(Icons.logout, color: Colors.white))
+                        ]),
+                    alignment: Alignment.bottomLeft),
+                onPressed: () {
+                  Navigator.pushNamed(context, '/account');
+                }),
+            decoration: BoxDecoration(color: Theme.of(context).accentColor)),
+        Card(
+            child: ListTile(
+                leading: Icon(Icons.description, color: Colors.white),
+                title: Text(
+                    "Last Ticket bought on ${lastTicket.buyDate.split('-')[2]}/${lastTicket.buyDate.split('-')[1]}/${lastTicket.buyDate.split('-')[0]}",
+                    style: TextStyle(color: Colors.white)),
+                tileColor: Theme.of(context).accentColor,
+                onTap: () => Navigator.pushNamed(context, '/ticket'))),
+      ];
+      if (this.toShowInDrawer != null) {
+        this.toShowInDrawer.forEach((mezzo) {
+          Map value = mezzo.value;
+          //dynamic key = mezzo.key;
+          options.add(Card(
+              child: ListTile(
+                  leading: Icon(value['type'] == 'BIKE'
+                      ? Icons.electric_bike
+                      : Icons.electric_scooter),
+                  title: Row(children: <Widget>[
+                    Icon(Icons.battery_full, color: Colors.green),
+                    Text("${value['battery']}%\t"),
+                    Text(
+                        "distance: ${Geolocator.distanceBetween(userLocation.latitude, userLocation.longitude, value['position'].latitude, value['position'].longitude).ceil()}")
+                  ]),
+                  onTap: () {
+                    _gmc.animateCamera(CameraUpdate.newCameraPosition(
+                        CameraPosition(
+                            target: LatLng(value['position'].latitude,
+                                value['position'].longitude),
+                            zoom: 18)));
+                    Navigator.pop(context);
+                    setState(() {
+                      this.filterType = null;
+                    });
+                  })));
+        });
+      }
       return Scaffold(
-          drawer: Drawer(child: DrawerScreen(_gmc)),
+          drawer: Drawer(child: ListView(children: options)),
           body: Builder(
             builder: (context) {
               return Stack(
@@ -61,7 +145,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Align(
                         alignment: Alignment.topLeft,
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             IconButton(
                                 iconSize: 32.0,
@@ -72,14 +157,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onPressed: () {
                                   Scaffold.of(context).openDrawer();
                                 }),
-                            SearchBar(),
+                            SearchBar(onSearch: search, onSubmit: find),
                             FloatingActionButton(
                               child: Icon(Icons.location_searching,
                                   color: Colors.white),
                               onPressed: () {
-                                _gmc.moveCamera(CameraUpdate.newCameraPosition(
-                                    CameraPosition(
-                                        target: userLocation, zoom: 15)));
+                                _gmc.animateCamera(
+                                    CameraUpdate.newCameraPosition(
+                                        CameraPosition(
+                                            target: userLocation, zoom: 15)));
                               },
                             )
                           ],
@@ -100,6 +186,14 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ));
     }
+  }
+
+  Future<void> getTicketButton() async {
+    Ticket recent = Ticket.parseString(
+        (await DatabaseManager.getTicketData(userEmail))['0'].toString());
+    setState(() {
+      this.lastTicket = recent;
+    });
   }
 
   Function filterPerType({TransportType transportType}) {
@@ -128,11 +222,69 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     });
   }
+
+  Future<void> sortNearestforDrawer() async {
+    Map temp = {};
+    this.mezzi.forEach((key, value) {
+      if (value['type'] == 'BIKE' || value['type'] == 'SCOOTER')
+        temp.addAll({key: value});
+    });
+    List sortedMezzi = temp.entries.toList();
+    sortedMezzi.sort((a, b) => Geolocator.distanceBetween(
+            a.value['position'].latitude,
+            a.value['position'].longitude,
+            this.userLocation.latitude,
+            this.userLocation.longitude)
+        .compareTo(Geolocator.distanceBetween(
+            b.value['position'].latitude,
+            b.value['position'].longitude,
+            this.userLocation.latitude,
+            this.userLocation.longitude)));
+    setState(() {
+      this.toShowInDrawer =
+          sortedMezzi.getRange(0, min(sortedMezzi.length - 1, 2) + 1).toList();
+    });
+  }
+
+  void search(String text) {
+    List newSearch = [];
+    List newSearchOptionsList = [];
+    mezzi.forEach((key, value) {
+      if (value['type'] == 'STATION') {
+        if (value['name']
+            .toString()
+            .toLowerCase()
+            .contains(text.toString().toLowerCase())) {
+          newSearch.add(value);
+          newSearchOptionsList.add(value['name']);
+        }
+      }
+    });
+    setState(() {
+      this.searchResults = newSearch;
+      this.searchOptionList = newSearchOptionsList;
+    });
+  }
+
+  void find(String text) {
+    if (searchResults != null) {
+      setState(() {
+        _gmc.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+            target: LatLng(this.searchResults[0]['position'].latitude,
+                this.searchResults[0]['position'].longitude),
+            zoom: 18)));
+      });
+    }
+  }
 }
 
 //custom widgets
 
 class SearchBar extends StatefulWidget {
+  Function onSearch, onSubmit;
+
+  SearchBar({this.onSearch, this.onSubmit});
+
   @override
   _SearchBarState createState() => _SearchBarState();
 }
@@ -144,14 +296,20 @@ class _SearchBarState extends State<SearchBar> {
       flex: 2,
       child: ClipRRect(
           child: Container(
-            color: Colors.white,
-            child: TextField(
-              decoration: InputDecoration(
-                  hintText: "Search",
-                  icon: Icon(Icons.search),
-                  border: InputBorder.none),
-            ),
-          ),
+              color: Colors.white,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    onChanged: widget.onSearch,
+                    onSubmitted: widget.onSubmit,
+                    decoration: InputDecoration(
+                        hintText: "Search",
+                        icon: Icon(Icons.search),
+                        border: InputBorder.none),
+                  ),
+                ],
+              )),
           borderRadius: BorderRadius.circular(40.0)),
     );
   }

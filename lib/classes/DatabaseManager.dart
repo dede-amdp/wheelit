@@ -216,9 +216,11 @@ class DatabaseManager {
   static Future<void> getRealTimeTransportData(
       {@required Function onChange, @required Map toChange}) async {
     LatLng userLocation;
-    Location().onLocationChanged().listen((event) async {
-      userLocation = LatLng(event.latitude, event.longitude);
-    });
+    if (userLocation == null) {
+      Location().onLocationChanged().listen((event) async {
+        userLocation = LatLng(event.latitude, event.longitude);
+      });
+    }
     toChange = await getNearestTransport(userLocation);
     await Firebase.initializeApp();
     //Setto i listener:
