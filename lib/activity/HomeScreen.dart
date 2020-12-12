@@ -7,6 +7,7 @@ import 'package:wheelit/classes/BottomBar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -26,6 +27,15 @@ class _HomeScreenState extends State<HomeScreen> {
   //List searchResult;
   List searchResults;
   List<String> searchOptionList = [];
+  String qr="";
+  String getQr="";
+
+  Future scanQrCode() async {
+    getQr = await FlutterBarcodeScanner.scanBarcode("#ffffff", "INDIETRO", true, ScanMode.QR);
+    setState(() {
+      floatingRent(getQr);
+    });
+  }
 
   @override
   void initState() {
@@ -167,7 +177,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                         CameraPosition(
                                             target: userLocation, zoom: 15)));
                               },
-                            )
+                            ),
+                            SizedBox(
+                              width: 55.0,
+                              height: 55.0,
+                              child: RaisedButton(
+                                color: Theme.of(context).accentColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30.0),
+                                ),
+                                child: Icon(Icons.qr_code_scanner_rounded,
+                                    color: Colors.white),
+                                onPressed: () {scanQrCode();},
+                              ),),
                           ],
                         )),
                   ),
@@ -185,6 +207,28 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ));
+    }
+  }
+
+  AlertDialog floatingRent(String qr) {
+    if (qr != "" && qr != "-1") {
+      showDialog(context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text(qr),
+              actions: <Widget>[
+                MaterialButton(
+                  elevation: 5.0,
+                  child: Text("RENT"),
+                  onPressed: () {
+                  },
+                )
+              ],
+            );
+          }
+      );
+    } else {
+      return null;
     }
   }
 
