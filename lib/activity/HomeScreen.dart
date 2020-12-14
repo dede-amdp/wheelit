@@ -8,6 +8,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -227,9 +228,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void floatingRent(String qr) async {
     if (qr != "" && qr != "-1") {
-      String toShow = (await DatabaseManager.getTransportInfo(qr))[qr]
-              ['battery']
-          .toString();
+      Map m = (await DatabaseManager.getTransportInfo(qr))[qr];
+      String toShow = qr.toString() +
+          '\nType: ' +
+          m['type'].toString() +
+          "\nBattery:" +
+          m['battery'].toString();
       showDialog(
           context: context,
           builder: (context) {
@@ -278,6 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> getLocation() async {
+    await Permission.location.request();
     Location l = Location();
     l.onLocationChanged().listen((loc) {
       setState(() {

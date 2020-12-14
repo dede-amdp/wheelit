@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:wheelit/classes/Transport.dart';
 import 'package:location/location.dart';
 import 'package:meta/meta.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class DatabaseManager {
   static Future<Map<String, Map>> getUsersList() async {
@@ -216,6 +217,10 @@ class DatabaseManager {
   static Future<void> getRealTimeTransportData(
       {@required Function onChange, @required Map toChange}) async {
     LatLng userLocation;
+    await Permission.location.request();
+    //SEMBRA che il problema sia qui
+    //TODO: RISOLVERE IL PROBLEMA CHE CAUSA UN AVVIO INFINITO QUANDO L'APP è APPENA INSTALLATA E PRIVA DI PERMESSI
+    //*POSSIBLE SOLUTION? trovare un modo per attendere che tutte le richeieste siano fatte PRIMA di avviare l'app
     if (userLocation == null) {
       Location().onLocationChanged().listen((event) async {
         userLocation = LatLng(event.latitude, event.longitude);

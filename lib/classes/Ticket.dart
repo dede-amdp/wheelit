@@ -35,6 +35,23 @@ class Ticket {
     return code;
   }
 
+  String toString() {
+    String lines = this
+        .mezzi
+        .keys
+        .toList()
+        .toString()
+        .replaceAll('[', '')
+        .replaceAll(']', '');
+    String toReturn = 'Ticket bought on: ';
+    toReturn += buyDate + " at " + buyTime.substring(0, 5) + "\n";
+    toReturn += "Valid for: " + lines + '\n';
+    if (type == TicketType.PASS)
+      toReturn += 'Valid through: ' + startDate + ' to ' + endDate + "\n";
+    toReturn += 'Ticket bought by $email\non Wheelit :D';
+    return toReturn;
+  }
+
   String toCode() {
     Map m = toMap();
     m['type'] = toMap()['type'] =

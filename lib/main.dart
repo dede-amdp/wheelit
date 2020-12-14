@@ -12,5 +12,5 @@ void main() => runApp(MaterialApp(
         '/ticket': (context) => TicketScreen(),
         '/login': (context) => LogInScreen(),
       },
-      initialRoute: '/login',
+      initialRoute: '/home',
     ));
