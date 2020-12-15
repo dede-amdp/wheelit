@@ -282,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> getLocation() async {
-    await Permission.location.request();
+    //await Permission.location.request();
     Location l = Location();
     l.onLocationChanged().listen((loc) {
       setState(() {
