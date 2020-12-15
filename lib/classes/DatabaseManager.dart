@@ -283,4 +283,25 @@ class DatabaseManager {
         .get()
         .then((value) => {value.id: value.data()});
   }
+
+  static Future<Map> getLinestoStation(String stationName) async {
+    Map data = {};
+    await Firebase.initializeApp();
+    try {
+      CollectionReference routesCollection =
+          FirebaseFirestore.instance.collection('routes');
+      await routesCollection
+          .where('station', isEqualTo: stationName)
+          .get()
+          .then((value) {
+        value.docs.forEach((element) {
+          data.addAll({element.id: element.data()});
+        });
+      });
+    } catch (error) {
+      print("ERROR: ${error.toString()}");
+      data = null;
+    }
+    return data;
+  }
 }

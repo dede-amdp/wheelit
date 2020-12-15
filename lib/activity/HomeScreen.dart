@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:wheelit/classes/Ticket.dart';
 import 'package:wheelit/classes/DatabaseManager.dart';
 import 'package:wheelit/classes/BottomBar.dart';
+import 'package:wheelit/activity/StationScreen.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:geolocator/geolocator.dart';
@@ -71,6 +72,16 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       Set markers = Set<Marker>.from(toShow.entries.map((e) {
         return Marker(
+            onTap: () => {
+                  if (e.value['type'] == 'STATION')
+                    {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  StationScreen(name: e.value['name'])))
+                    }
+                },
             markerId: MarkerId(e.key),
             position: LatLng(
                 e.value['position'].latitude, e.value['position'].longitude));
@@ -92,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(userEmail,
-                            overflow: TextOverflow.clip,
+                            overflow: TextOverflow.fade,
                             style:
                                 TextStyle(color: Colors.white, fontSize: 16)),
                         IconButton(
