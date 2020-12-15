@@ -1,6 +1,4 @@
 import 'dart:math';
-import 'package:wheelit/activity/AccountScreen.dart';
-import 'package:wheelit/activity/WelcomeScreen.dart';
 import 'package:wheelit/classes/Transport.dart';
 import 'package:flutter/material.dart';
 import 'package:wheelit/classes/Ticket.dart';
@@ -12,6 +10,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wheelit/activity/StationScreen.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -30,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<String> searchOptionList = [];
   String qr = "";
   User user = FirebaseAuth.instance.currentUser;
+  final GoogleSignIn googleSignIn = GoogleSignIn();
 
   Future<void> scanQrCode() async {
     qr = await FlutterBarcodeScanner.scanBarcode(
@@ -40,14 +40,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   navigateToAccountScreen() async {
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => AccountScreen()));
+    Navigator.pushReplacementNamed(context, '/account');
   }
 
   void signOut() async {
     await FirebaseAuth.instance.signOut();
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => WelcomeScreen()));
+    await googleSignIn.signOut();
+    Navigator.pushReplacementNamed(context, '/welcome');
   }
 
   @override

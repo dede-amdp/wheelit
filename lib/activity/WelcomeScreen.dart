@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
-import 'package:wheelit/activity/HomeScreen.dart';
-import 'package:wheelit/activity/LoginScreen.dart';
-import 'package:wheelit/activity/SignUpScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wheelit/Auth.dart';
 import 'package:location/location.dart';
@@ -22,18 +19,15 @@ class _StartState extends State<WelcomeScreen> {
   }
 
   navigateToLogin() async {
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => LoginScreen()));
+    Navigator.pushReplacementNamed(context, '/login');
   }
 
   navigateToRegister() async {
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => SignUpScreen()));
+    Navigator.pushReplacementNamed(context, '/signUp');
   }
 
   navigateToHomeScreen() async {
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => HomeScreen()));
+    Navigator.pushReplacementNamed(context, '/home');
   }
 
   @override

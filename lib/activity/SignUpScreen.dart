@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:wheelit/activity/HomeScreen.dart';
-import 'package:wheelit/activity/LoginScreen.dart';
 
 class SignUpScreen extends StatefulWidget {
   @override
@@ -19,11 +17,10 @@ class _SignUpState extends State<SignUpScreen> {
   String cvc;
   String expirationDate;
 
-  checkAuthentication() async {
+  void checkAuthentication() async {
     _auth.authStateChanges().listen((user) async {
       if (user != null) {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => HomeScreen()));
+        Navigator.pushReplacementNamed(context, '/home');
       }
     });
   }
@@ -34,7 +31,7 @@ class _SignUpState extends State<SignUpScreen> {
     this.checkAuthentication();
   }
 
-  signUp() async {
+  void signUp() async {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
       try {
@@ -44,6 +41,7 @@ class _SignUpState extends State<SignUpScreen> {
           await FirebaseAuth.instance.currentUser
               .updateProfile(displayName: user.displayName);
         }
+        await Future.delayed(Duration(seconds: 3));
       } catch (error) {
         showError(error.message);
         print(error);
@@ -51,7 +49,7 @@ class _SignUpState extends State<SignUpScreen> {
     }
   }
 
-  showError(String errormessage) {
+  void showError(String errormessage) {
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -206,10 +204,8 @@ class _SignUpState extends State<SignUpScreen> {
                             style:
                                 TextStyle(color: Theme.of(context).accentColor),
                           ),
-                          onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => LoginScreen())),
+                          onTap: () =>
+                              Navigator.pushReplacementNamed(context, '/login'),
                         )
                       ],
                     )
@@ -223,7 +219,7 @@ class _SignUpState extends State<SignUpScreen> {
     ));
   }
 
-  pickDate() async {
+  void pickDate() async {
     DateTime now = DateTime.now();
     DateTime date = await showDatePicker(
       context: context,
