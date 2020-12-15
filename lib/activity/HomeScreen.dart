@@ -13,7 +13,6 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wheelit/activity/StationScreen.dart';
 
-
 class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -32,8 +31,6 @@ class _HomeScreenState extends State<HomeScreen> {
   String qr = "";
   User user = FirebaseAuth.instance.currentUser;
 
-
-
   Future<void> scanQrCode() async {
     qr = await FlutterBarcodeScanner.scanBarcode(
         "#ffffff", "INDIETRO", true, ScanMode.QR);
@@ -42,15 +39,15 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  navigateToAccountScreen()async{
-    Navigator.push(context, MaterialPageRoute(builder: (context)=> AccountScreen()));
+  navigateToAccountScreen() async {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => AccountScreen()));
   }
 
-    void signOut() async {
+  void signOut() async {
     await FirebaseAuth.instance.signOut();
-    Navigator.push(context,
-        MaterialPageRoute(builder: (context) => WelcomeScreen())
-    );
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => WelcomeScreen()));
   }
 
   @override
@@ -87,64 +84,70 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       Set markers = Set<Marker>.from(toShow.entries.map((e) {
         return Marker(
+            icon: BitmapDescriptor.fromAsset(e.value['type'] == 'BIKE'
+                ? 'assets/icons/bike_icon.bmp'
+                : e.value['type'] == 'SCOOTER'
+                    ? 'assets/icons/scooter_icon.bmp'
+                    : 'assets/icons/station_icon.bmp'),
             onTap: () => {
-              if (e.value['type'] == 'STATION')
-                {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              StationScreen(name: e.value['name'])))
-                }
-            },
+                  if (e.value['type'] == 'STATION')
+                    {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  StationScreen(name: e.value['name'])))
+                    }
+                },
             markerId: MarkerId(e.key),
             position: LatLng(
                 e.value['position'].latitude, e.value['position'].longitude));
       }));
       markers.add(Marker(
         markerId: MarkerId("user"),
+        icon: BitmapDescriptor.fromAsset('assets/icons/user_icon.bmp'),
         position: userLocation,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
       ));
       List options = <Widget>[
         DrawerHeader(
-          decoration: BoxDecoration(
-              color: Theme.of(context).accentColor,
-              image: DecorationImage(
-                  image: AssetImage('assets/images/DrawerHeaderImage.jpg'))),
-          child: FlatButton(
-              child: Align(
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: Text(user.email,
-                              overflow: TextOverflow.fade,
-                              style:
-                              TextStyle(color: Colors.white, fontSize: 13)),
-                        ),
-                        IconButton(
-                        onPressed: () {
-                        signOut();
-                        },
-                        icon: Icon(Icons.logout, color: Colors.white)),
-                      ]),
-                  alignment: Alignment.bottomLeft),
-              onPressed: () {
-                Navigator.pushNamed(context, '/account');
-              })
-        ),
+            decoration: BoxDecoration(
+                color: Theme.of(context).accentColor,
+                image: DecorationImage(
+                    image: AssetImage('assets/images/DrawerHeaderImage.jpg'))),
+            child: FlatButton(
+                child: Align(
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Text(user.email,
+                                overflow: TextOverflow.fade,
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 16)),
+                          ),
+                          IconButton(
+                              onPressed: () {
+                                signOut();
+                              },
+                              icon: Icon(Icons.logout, color: Colors.white)),
+                        ]),
+                    alignment: Alignment.bottomLeft),
+                onPressed: () {
+                  Navigator.pushNamed(context, '/account');
+                })),
         Card(
             child: ListTile(
                 leading: Icon(Icons.description, color: Colors.white),
-                title: lastTicket == null ? Text(
-                    "Last Ticket bought on ${lastTicket.buyDate.split('-')[2]}/${lastTicket.buyDate.split('-')[1]}/${lastTicket.buyDate.split('-')[0]}",
-                    style: TextStyle(color: Colors.white)): 
-                Text('No ticket',
-                style: TextStyle(
-                  color: Colors.white,
-                  ),
-                ),
+                title: lastTicket == null
+                    ? Text(
+                        "Last Ticket bought on ${lastTicket.buyDate.split('-')[2]}/${lastTicket.buyDate.split('-')[1]}/${lastTicket.buyDate.split('-')[0]}",
+                        style: TextStyle(color: Colors.white))
+                    : Text(
+                        'No ticket',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
                 tileColor: Theme.of(context).accentColor,
                 onTap: () => Navigator.pushNamed(context, '/ticket'))),
       ];
@@ -291,17 +294,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> getTicketButton() async {
-
     String userEmail = user.email;
     Map temp = await DatabaseManager.getTicketData(userEmail);
 
-    if(temp != null) {
-      Ticket recent = Ticket.parseString(
-          temp['0'].toString());
+    if (temp != null) {
+      Ticket recent = Ticket.parseString(temp['0'].toString());
       setState(() {
         this.lastTicket = recent;
       });
-    }else{
+    } else {
       setState(() {
         this.lastTicket = null;
       });

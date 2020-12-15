@@ -6,7 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:wheelit/classes/Transport.dart';
 import 'package:location/location.dart';
 import 'package:meta/meta.dart';
-import 'package:wheelit/activity/StationScreen.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class DatabaseManager {
   static Future<Map<String, Map>> getUsersList() async {
@@ -221,41 +221,43 @@ class DatabaseManager {
     //SEMBRA che il problema sia qui
     //TODO: RISOLVERE IL PROBLEMA CHE CAUSA UN AVVIO INFINITO QUANDO L'APP è APPENA INSTALLATA E PRIVA DI PERMESSI
     //*POSSIBLE SOLUTION? trovare un modo per attendere che tutte le richeieste siano fatte PRIMA di avviare l'app
-    if (userLocation == null) {
+    final Permission _permissionHandler = Permission.location;
+    var result = await _permissionHandler.request();
+    if (result.isGranted) {
       Location().onLocationChanged().listen((event) async {
         userLocation = LatLng(event.latitude, event.longitude);
       });
-    }
-    toChange = await getNearestTransport(userLocation);
-    await Firebase.initializeApp();
-    //Setto i listener:
-    CollectionReference eleCollection =
-        FirebaseFirestore.instance.collection('electric');
-    try {
-      eleCollection.snapshots().listen((changes) {
-        changes.docChanges.forEach((changedDoc) {
-          double distance = Geolocator.distanceBetween(
-                  changedDoc.doc.data()['position'].latitude,
-                  changedDoc.doc.data()['position'].longitude,
-                  userLocation.latitude,
-                  userLocation.longitude)
-              .abs();
-          if (distance <= 2000) {
-            if (changedDoc.doc.data()['state'] != 'FREE') {
-              toChange.remove(changedDoc.doc.id);
+      toChange = await getNearestTransport(userLocation);
+      await Firebase.initializeApp();
+      //Setto i listener:
+      CollectionReference eleCollection =
+          FirebaseFirestore.instance.collection('electric');
+      try {
+        eleCollection.snapshots().listen((changes) {
+          changes.docChanges.forEach((changedDoc) {
+            double distance = Geolocator.distanceBetween(
+                    changedDoc.doc.data()['position'].latitude,
+                    changedDoc.doc.data()['position'].longitude,
+                    userLocation.latitude,
+                    userLocation.longitude)
+                .abs();
+            if (distance <= 2000) {
+              if (changedDoc.doc.data()['state'] != 'FREE') {
+                toChange.remove(changedDoc.doc.id);
+              } else {
+                toChange.update(
+                    changedDoc.doc.id, (value) => changedDoc.doc.data(),
+                    ifAbsent: () => changedDoc.doc.data());
+              }
             } else {
-              toChange.update(
-                  changedDoc.doc.id, (value) => changedDoc.doc.data(),
-                  ifAbsent: () => changedDoc.doc.data());
+              toChange.remove(changedDoc.doc.id);
             }
-          } else {
-            toChange.remove(changedDoc.doc.id);
-          }
-          onChange(toChange);
+            onChange(toChange);
+          });
         });
-      });
-    } catch (error) {
-      print(error.toString());
+      } catch (error) {
+        print(error.toString());
+      }
     }
   }
 
@@ -284,13 +286,12 @@ class DatabaseManager {
         .then((value) => {value.id: value.data()});
   }
 
-
   static Future<Map> getLinestoStation(String stationName) async {
     Map data = {};
     await Firebase.initializeApp();
     try {
       CollectionReference routesCollection =
-      FirebaseFirestore.instance.collection('routes');
+          FirebaseFirestore.instance.collection('routes');
       await routesCollection
           .where('station', isEqualTo: stationName)
           .get()

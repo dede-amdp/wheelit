@@ -7,16 +7,17 @@ final GoogleSignIn googleSignIn = GoogleSignIn();
 Future<User> signInWithGoogle() async {
   print("Debug ");
   final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
-  final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount.authentication;
+  final GoogleSignInAuthentication googleSignInAuthentication =
+      await googleSignInAccount.authentication;
   final AuthCredential credential = GoogleAuthProvider.credential(
-    idToken: googleSignInAuthentication.idToken,
-    accessToken: googleSignInAuthentication.accessToken);
-  final UserCredential authResult = await _auth.signInWithCredential(credential);
+      idToken: googleSignInAuthentication.idToken,
+      accessToken: googleSignInAuthentication.accessToken);
+  final UserCredential authResult =
+      await _auth.signInWithCredential(credential);
   final User user = authResult.user;
   assert(!user.isAnonymous);
   assert(await user.getIdToken() != null);
-  final User currentuser = await _auth.currentUser;
+  final User currentuser = _auth.currentUser;
   assert(currentuser.uid == user.uid);
-  print("Debug $user");
   return user;
 }
