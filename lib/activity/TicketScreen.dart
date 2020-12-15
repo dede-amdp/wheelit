@@ -6,6 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class TicketScreen extends StatefulWidget {
   @override
@@ -29,6 +30,8 @@ class _TicketScreenState extends State<TicketScreen> {
   List<Ticket> ticketList = [];
   String userEmail = 'pippolippo@gmail.com';
   GlobalKey _scaffoldKey = GlobalKey();
+  User user = FirebaseAuth.instance.currentUser;
+
 
   @override
   void initState() {
@@ -101,7 +104,7 @@ class _TicketScreenState extends State<TicketScreen> {
   }
 
   Future<void> getUserTicket() async {
-    Map tickets = await DatabaseManager.getTicketData(userEmail);
+    Map tickets = await DatabaseManager.getTicketData(user.email);
     List<Ticket> temp = [];
     tickets.forEach((key, value) {
       temp.add(Ticket.parseString(value.toString()));
@@ -110,58 +113,58 @@ class _TicketScreenState extends State<TicketScreen> {
       this.ticketList = temp;
     });
   }
+}
 
-  Future<String> downloadPdf(Ticket t) async {
-    try {
-      bool res = await Permission.storage.isDenied;
-      if (res) {
-        await Permission.storage.request();
-      } else {
-        final QrPainter imagePainter = QrPainter(
-          data: t.toCode(),
-          version: QrVersions.auto,
-        );
-        double imageSize = 300;
-        final imageByteData = await imagePainter.toImageData(imageSize);
-        final imageuintlist = imageByteData.buffer.asUint8List();
-        PdfDocument doc = PdfDocument();
-        PdfPage pdfp = doc.pages.add();
-        pdfp.graphics.drawImage(PdfBitmap(imageuintlist),
-            Rect.fromLTWH(0, 0, imageSize, imageSize));
-        PdfFont font = PdfStandardFont(PdfFontFamily.helvetica, 24);
-        String toWrite = t.toString();
-        Size stringSize = font.measureString(toWrite);
-        pdfp.graphics.drawString(toWrite, font,
-            bounds: Rect.fromLTWH(
-                0, imageSize + 20, stringSize.width, stringSize.height));
-        Directory appDocumentsDirectory = await getExternalStorageDirectory();
-        String filePath = appDocumentsDirectory.absolute.path;
-        List filenames = Directory(filePath)
-            .listSync(followLinks: false, recursive: false)
-            .map((e) {
-          String directoryName = e.parent.toString().split('\'')[1];
-          return e
-              .toString()
-              .split(directoryName)[1]
-              .replaceAll('\'', '')
-              .replaceAll(']', '')
-              .replaceAll('.pdf', '');
-        }).toList();
-        print('path: $filenames');
-        String fileName = '/wheelitTicket';
-        int i = 0;
-        while (filenames.contains(fileName)) {
-          fileName = '/wheelitTicket(${i++})';
-        }
-        File file = File('$filePath$fileName.pdf');
-        file.writeAsBytesSync(doc.save(), mode: FileMode.writeOnly);
-        doc.dispose();
-        return fileName;
+Future<String> downloadPdf(Ticket t) async {
+  try {
+    bool res = await Permission.storage.isDenied;
+    if (res) {
+      await Permission.storage.request();
+    } else {
+      final QrPainter imagePainter = QrPainter(
+        data: t.toCode(),
+        version: QrVersions.auto,
+      );
+      double imageSize = 300;
+      final imageByteData = await imagePainter.toImageData(imageSize);
+      final imageuintlist = imageByteData.buffer.asUint8List();
+      PdfDocument doc = PdfDocument();
+      PdfPage pdfp = doc.pages.add();
+      pdfp.graphics.drawImage(PdfBitmap(imageuintlist),
+          Rect.fromLTWH(0, 0, imageSize, imageSize));
+      PdfFont font = PdfStandardFont(PdfFontFamily.helvetica, 24);
+      String toWrite = t.toString();
+      Size stringSize = font.measureString(toWrite);
+      pdfp.graphics.drawString(toWrite, font,
+          bounds: Rect.fromLTWH(
+              0, imageSize + 20, stringSize.width, stringSize.height));
+      Directory appDocumentsDirectory = await getExternalStorageDirectory();
+      String filePath = appDocumentsDirectory.absolute.path;
+      List filenames = Directory(filePath)
+          .listSync(followLinks: false, recursive: false)
+          .map((e) {
+        String directoryName = e.parent.toString().split('\'')[1];
+        return e
+            .toString()
+            .split(directoryName)[1]
+            .replaceAll('\'', '')
+            .replaceAll(']', '')
+            .replaceAll('.pdf', '');
+      }).toList();
+      print('path: $filenames');
+      String fileName = '/wheelitTicket';
+      int i = 0;
+      while (filenames.contains(fileName)) {
+        fileName = '/wheelitTicket(${i++})';
       }
-    } catch (error) {
-      print('ERROR: ${error.toString()}');
-      return null;
+      File file = File('$filePath$fileName.pdf');
+      file.writeAsBytesSync(doc.save(), mode: FileMode.writeOnly);
+      doc.dispose();
+      return fileName;
     }
+  } catch (error) {
+    print('ERROR: ${error.toString()}');
     return null;
   }
+  return null;
 }

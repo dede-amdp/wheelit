@@ -6,7 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:wheelit/classes/Transport.dart';
 import 'package:location/location.dart';
 import 'package:meta/meta.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:wheelit/activity/StationScreen.dart';
 
 class DatabaseManager {
   static Future<Map<String, Map>> getUsersList() async {
@@ -284,12 +284,13 @@ class DatabaseManager {
         .then((value) => {value.id: value.data()});
   }
 
+
   static Future<Map> getLinestoStation(String stationName) async {
     Map data = {};
     await Firebase.initializeApp();
     try {
       CollectionReference routesCollection =
-          FirebaseFirestore.instance.collection('routes');
+      FirebaseFirestore.instance.collection('routes');
       await routesCollection
           .where('station', isEqualTo: stationName)
           .get()

@@ -1,15 +1,18 @@
 import 'dart:math';
+import 'package:wheelit/activity/AccountScreen.dart';
+import 'package:wheelit/activity/WelcomeScreen.dart';
 import 'package:wheelit/classes/Transport.dart';
 import 'package:flutter/material.dart';
 import 'package:wheelit/classes/Ticket.dart';
 import 'package:wheelit/classes/DatabaseManager.dart';
 import 'package:wheelit/classes/BottomBar.dart';
-import 'package:wheelit/activity/StationScreen.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:wheelit/activity/StationScreen.dart';
+
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -19,7 +22,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   Map mezzi;
   Ticket recent;
-  String userEmail = 'pippolippo@gmail.com';
   LatLng userLocation;
   GoogleMapController _gmc;
   TransportType filterType;
@@ -28,14 +30,27 @@ class _HomeScreenState extends State<HomeScreen> {
   List searchResults;
   List<String> searchOptionList = [];
   String qr = "";
-  String getQr = "";
+  User user = FirebaseAuth.instance.currentUser;
+
+
 
   Future<void> scanQrCode() async {
-    getQr = await FlutterBarcodeScanner.scanBarcode(
+    qr = await FlutterBarcodeScanner.scanBarcode(
         "#ffffff", "INDIETRO", true, ScanMode.QR);
     setState(() {
-      floatingRent(getQr);
+      floatingRent(qr);
     });
+  }
+
+  navigateToAccountScreen()async{
+    Navigator.push(context, MaterialPageRoute(builder: (context)=> AccountScreen()));
+  }
+
+    void signOut() async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => WelcomeScreen())
+    );
   }
 
   @override
@@ -73,15 +88,15 @@ class _HomeScreenState extends State<HomeScreen> {
       Set markers = Set<Marker>.from(toShow.entries.map((e) {
         return Marker(
             onTap: () => {
-                  if (e.value['type'] == 'STATION')
-                    {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  StationScreen(name: e.value['name'])))
-                    }
-                },
+              if (e.value['type'] == 'STATION')
+                {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              StationScreen(name: e.value['name'])))
+                }
+            },
             markerId: MarkerId(e.key),
             position: LatLng(
                 e.value['position'].latitude, e.value['position'].longitude));
@@ -102,25 +117,34 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(userEmail,
-                            overflow: TextOverflow.fade,
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 16)),
+                        Flexible(
+                          child: Text(user.email,
+                              overflow: TextOverflow.fade,
+                              style:
+                              TextStyle(color: Colors.white, fontSize: 13)),
+                        ),
                         IconButton(
-                            onPressed: () {},
-                            icon: Icon(Icons.logout, color: Colors.white))
+                        onPressed: () {
+                        signOut();
+                        },
+                        icon: Icon(Icons.logout, color: Colors.white)),
                       ]),
                   alignment: Alignment.bottomLeft),
               onPressed: () {
                 Navigator.pushNamed(context, '/account');
-              }),
+              })
         ),
         Card(
             child: ListTile(
                 leading: Icon(Icons.description, color: Colors.white),
-                title: Text(
+                title: lastTicket == null ? Text(
                     "Last Ticket bought on ${lastTicket.buyDate.split('-')[2]}/${lastTicket.buyDate.split('-')[1]}/${lastTicket.buyDate.split('-')[0]}",
-                    style: TextStyle(color: Colors.white)),
+                    style: TextStyle(color: Colors.white)): 
+                Text('No ticket',
+                style: TextStyle(
+                  color: Colors.white,
+                  ),
+                ),
                 tileColor: Theme.of(context).accentColor,
                 onTap: () => Navigator.pushNamed(context, '/ticket'))),
       ];
@@ -256,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text("RENT"),
                   onPressed: () {
                     DatabaseManager.setStartRent(
-                        userEmail: this.userEmail, transportCode: qr);
+                        userEmail: this.user.email, transportCode: qr);
                     Navigator.pop(context);
                   },
                 )
@@ -267,11 +291,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> getTicketButton() async {
-    Ticket recent = Ticket.parseString(
-        (await DatabaseManager.getTicketData(userEmail))['0'].toString());
-    setState(() {
-      this.lastTicket = recent;
-    });
+
+    String userEmail = user.email;
+    Map temp = await DatabaseManager.getTicketData(userEmail);
+
+    if(temp != null) {
+      Ticket recent = Ticket.parseString(
+          temp['0'].toString());
+      setState(() {
+        this.lastTicket = recent;
+      });
+    }else{
+      setState(() {
+        this.lastTicket = null;
+      });
+    }
   }
 
   Function filterPerType({TransportType transportType}) {
