@@ -29,9 +29,8 @@ class TicketScreen extends StatefulWidget {
 class _TicketScreenState extends State<TicketScreen> {
   List<Ticket> ticketList = [];
   String userEmail = 'pippolippo@gmail.com';
-  GlobalKey _scaffoldKey = GlobalKey();
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   User user = FirebaseAuth.instance.currentUser;
-
 
   @override
   void initState() {
@@ -41,6 +40,9 @@ class _TicketScreenState extends State<TicketScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Function showMessage = (String text) {
+      _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(text)));
+    };
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
@@ -61,16 +63,13 @@ class _TicketScreenState extends State<TicketScreen> {
                                 icon: Icon(Icons.file_download),
                                 onPressed: () async {
                                   String filename = await downloadPdf(ticket);
-                                  /*if (filename != null) {
-                                    SnackBar snckbr = SnackBar(
-                                        content: Text(
-                                            'File $filename.pdf was saved'));
-                                    Scaffold.of(context).showSnackBar(snckbr);
+                                  if (filename != null) {
+                                    showMessage(
+                                        '${filename.replaceAll('/', '')}.pdf was created');
                                   } else {
-                                    Scaffold.of(context).showSnackBar(SnackBar(
-                                        content: Text(
-                                            'File was not saved due to an error, check your storage')));
-                                  }*/
+                                    showMessage(
+                                        'File was not saved due to an error, check your storage');
+                                  }
                                 }),
                             leading: Icon(Icons.qr_code_rounded),
                             title: Text((ticket.type == TicketType.PASS
@@ -130,8 +129,8 @@ Future<String> downloadPdf(Ticket t) async {
       final imageuintlist = imageByteData.buffer.asUint8List();
       PdfDocument doc = PdfDocument();
       PdfPage pdfp = doc.pages.add();
-      pdfp.graphics.drawImage(PdfBitmap(imageuintlist),
-          Rect.fromLTWH(0, 0, imageSize, imageSize));
+      pdfp.graphics.drawImage(
+          PdfBitmap(imageuintlist), Rect.fromLTWH(0, 0, imageSize, imageSize));
       PdfFont font = PdfStandardFont(PdfFontFamily.helvetica, 24);
       String toWrite = t.toString();
       Size stringSize = font.measureString(toWrite);
@@ -151,7 +150,6 @@ Future<String> downloadPdf(Ticket t) async {
             .replaceAll(']', '')
             .replaceAll('.pdf', '');
       }).toList();
-      print('path: $filenames');
       String fileName = '/wheelitTicket';
       int i = 0;
       while (filenames.contains(fileName)) {

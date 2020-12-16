@@ -228,16 +228,17 @@ class DatabaseManager {
       Location().onLocationChanged().listen((event) async {
         userLocation = LatLng(event.latitude, event.longitude);
       });*/
-      LocationProvider.getLocation(toUse: (position) {
+      /*LocationProvider.getLocation(toUse: (position) {
         userLocation = LatLng(position.latitude, position.longitude);
-      });
+      });*/
       toChange = await getNearestTransport(userLocation);
       await Firebase.initializeApp();
       //Setto i listener:
       CollectionReference eleCollection =
           FirebaseFirestore.instance.collection('electric');
       try {
-        eleCollection.snapshots().listen((changes) {
+        eleCollection.snapshots().listen((changes) async {
+          userLocation = await LocationProvider.getCurrentLocation();
           changes.docChanges.forEach((changedDoc) {
             double distance = userLocation != null
                 ? Geolocator.distanceBetween(

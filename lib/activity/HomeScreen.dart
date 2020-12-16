@@ -297,6 +297,10 @@ class _HomeScreenState extends State<HomeScreen> {
     Map temp = await DatabaseManager.getTicketData(user.email);
 
     if (temp != null) {
+      if (temp.isEmpty)
+        setState(() {
+          this.lastTicket = null;
+        });
       Ticket recent = Ticket.parseString(temp['0'].toString());
       setState(() {
         if (mounted) this.lastTicket = recent;
@@ -335,15 +339,6 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     };
     LocationProvider.getLocation(toUse: f);
-    /*Location l = Location();
-    if (await l.serviceEnabled()) {
-      l.onLocationChanged().listen((loc) {
-        setState(() {
-          if (mounted) userLocation = LatLng(loc.latitude, loc.longitude);
-        });
-      });
-    } else
-      print("NON ATTIVO");*/
   }
 
   Future<void> sortNearestforDrawer() async {

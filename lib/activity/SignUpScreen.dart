@@ -37,12 +37,13 @@ class _SignUpState extends State<SignUpScreen> {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
       try {
-
-        await DatabaseManager.setPaymentCard(email, cvc, carCode, expirationDate);
+        await DatabaseManager.setPaymentCard(
+            email, cvc, carCode, expirationDate);
         await DatabaseManager.setUser(email, birthDate, userName);
 
         User user = (await _auth.createUserWithEmailAndPassword(
-            email: email, password: password)) as FirebaseUser;
+                email: email, password: password))
+            .user /* as FirebaseUser*/;
         if (user != null) {
           await FirebaseAuth.instance.currentUser
               .updateProfile(displayName: user.displayName);
@@ -93,7 +94,7 @@ class _SignUpState extends State<SignUpScreen> {
                   children: <Widget>[
                     Container(
                       child: TextFormField(
-                        // ignore: missing_return
+                          // ignore: missing_return
                           validator: (input) {
                             if (input.isEmpty) {
                               return '  Enter user name';
