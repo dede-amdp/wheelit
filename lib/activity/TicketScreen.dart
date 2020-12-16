@@ -44,14 +44,14 @@ class _TicketScreenState extends State<TicketScreen> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-          title: Text("I tuoi biglietti:"),
+          title: Text("Your tickets:"),
           backgroundColor: Theme.of(context).accentColor),
       body: ticketList == null
           ? Center(child: CircularProgressIndicator())
           : ticketList.isEmpty
               ? Center(
-                  child: Text("Nessun biglietto acquistato",
-                      style: TextStyle(fontSize: 24.0)))
+                  child: Text("No tickets purchased",
+                      style: TextStyle(fontSize: 30.0)))
               : ListView(
                   physics: BouncingScrollPhysics(),
                   children: ticketList.map((ticket) {
