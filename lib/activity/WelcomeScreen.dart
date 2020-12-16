@@ -19,11 +19,11 @@ class _StartState extends State<WelcomeScreen> {
   }
 
   navigateToLogin() async {
-    Navigator.pushReplacementNamed(context, '/login');
+    Navigator.pushNamed(context, '/login');
   }
 
   navigateToRegister() async {
-    Navigator.pushReplacementNamed(context, '/signUp');
+    Navigator.pushNamed(context, '/signUp');
   }
 
   navigateToHomeScreen() async {

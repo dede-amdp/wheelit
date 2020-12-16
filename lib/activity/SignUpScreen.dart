@@ -41,7 +41,6 @@ class _SignUpState extends State<SignUpScreen> {
           await FirebaseAuth.instance.currentUser
               .updateProfile(displayName: user.displayName);
         }
-        await Future.delayed(Duration(seconds: 3));
       } catch (error) {
         showError(error.message);
         print(error);

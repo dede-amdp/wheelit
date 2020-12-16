@@ -148,8 +148,7 @@ class _LoginState extends State<LoginScreen> {
                       color: Theme.of(context).accentColor,
                     ),
                   ),
-                  onTap: () =>
-                      Navigator.pushReplacementNamed(context, '/signUp'),
+                  onTap: () => Navigator.pushNamed(context, '/signUp'),
                 )
               ],
             ),
@@ -161,7 +160,7 @@ class _LoginState extends State<LoginScreen> {
                   color: Theme.of(context).accentColor,
                 ),
               ),
-              onTap: () => Navigator.pushReplacementNamed(context, '/reset'),
+              onTap: () => Navigator.pushNamed(context, '/reset'),
             )
           ],
         ),

@@ -215,8 +215,10 @@ class DatabaseManager {
   }
 
   static Future<void> getRealTimeTransportData(
-      {@required Function onChange, @required Map toChange}) async {
-    LatLng userLocation;
+      {@required Function onChange,
+      @required Map toChange,
+      LatLng userLoc}) async {
+    LatLng userLocation = userLoc;
     //await Permission.location.request();
     //SEMBRA che il problema sia qui
     //TODO: RISOLVERE IL PROBLEMA CHE CAUSA UN AVVIO INFINITO QUANDO L'APP è APPENA INSTALLATA E PRIVA DI PERMESSI
@@ -235,12 +237,14 @@ class DatabaseManager {
       try {
         eleCollection.snapshots().listen((changes) {
           changes.docChanges.forEach((changedDoc) {
-            double distance = Geolocator.distanceBetween(
-                    changedDoc.doc.data()['position'].latitude,
-                    changedDoc.doc.data()['position'].longitude,
-                    userLocation.latitude,
-                    userLocation.longitude)
-                .abs();
+            double distance = userLocation != null
+                ? Geolocator.distanceBetween(
+                        changedDoc.doc.data()['position'].latitude,
+                        changedDoc.doc.data()['position'].longitude,
+                        userLocation.latitude,
+                        userLocation.longitude)
+                    .abs()
+                : double.infinity;
             if (distance <= 2000) {
               if (changedDoc.doc.data()['state'] != 'FREE') {
                 toChange.remove(changedDoc.doc.id);

@@ -56,7 +56,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           FirebaseAuth.instance
                               .sendPasswordResetEmail(email: _email)
                               .whenComplete(() {
-                            Navigator.pushReplacementNamed(context, '/login');
+                            Navigator.pushNamed(context, '/login');
                           });
                         }
                       },

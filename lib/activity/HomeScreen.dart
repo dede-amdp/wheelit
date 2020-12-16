@@ -35,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
     qr = await FlutterBarcodeScanner.scanBarcode(
         "#ffffff", "INDIETRO", true, ScanMode.QR);
     setState(() {
-      floatingRent(qr);
+      if (mounted) floatingRent(qr);
     });
   }
 
@@ -173,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             zoom: 18)));
                     Navigator.pop(context);
                     setState(() {
-                      this.filterType = null;
+                      if (mounted) this.filterType = null;
                     });
                   })));
         });
@@ -299,11 +299,11 @@ class _HomeScreenState extends State<HomeScreen> {
     if (temp != null) {
       Ticket recent = Ticket.parseString(temp['0'].toString());
       setState(() {
-        this.lastTicket = recent;
+        if (mounted) this.lastTicket = recent;
       });
     } else {
       setState(() {
-        this.lastTicket = null;
+        if (mounted) this.lastTicket = null;
       });
     }
   }
@@ -311,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Function filterPerType({TransportType transportType}) {
     return () async {
       setState(() {
-        filterType = transportType;
+        if (mounted) filterType = transportType;
       });
     };
   }
@@ -323,7 +323,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     };
     DatabaseManager.getRealTimeTransportData(
-        onChange: updateMap, toChange: this.mezzi);
+        onChange: updateMap, toChange: this.mezzi, userLoc: this.userLocation);
   }
 
   Future<void> getLocation() async {
@@ -354,8 +354,10 @@ class _HomeScreenState extends State<HomeScreen> {
             this.userLocation.latitude,
             this.userLocation.longitude)));
     setState(() {
-      this.toShowInDrawer =
-          sortedMezzi.getRange(0, min(sortedMezzi.length - 1, 2) + 1).toList();
+      if (mounted)
+        this.toShowInDrawer = sortedMezzi
+            .getRange(0, min(sortedMezzi.length - 1, 2) + 1)
+            .toList();
     });
   }
 
@@ -374,18 +376,21 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
     setState(() {
-      this.searchResults = newSearch;
-      this.searchOptionList = newSearchOptionsList;
+      if (mounted) {
+        this.searchResults = newSearch;
+        this.searchOptionList = newSearchOptionsList;
+      }
     });
   }
 
   void find(String text) {
     if (searchResults != null) {
       setState(() {
-        _gmc.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-            target: LatLng(this.searchResults[0]['position'].latitude,
-                this.searchResults[0]['position'].longitude),
-            zoom: 18)));
+        if (mounted)
+          _gmc.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+              target: LatLng(this.searchResults[0]['position'].latitude,
+                  this.searchResults[0]['position'].longitude),
+              zoom: 18)));
       });
     }
   }
