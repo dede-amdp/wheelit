@@ -137,7 +137,8 @@ Future<String> downloadPdf(Ticket t) async {
       pdfp.graphics.drawString(toWrite, font,
           bounds: Rect.fromLTWH(
               0, imageSize + 20, stringSize.width, stringSize.height));
-      Directory appDocumentsDirectory = await getExternalStorageDirectory();
+      Directory appDocumentsDirectory =
+          await getExternalStorageDirectory(); //DOCUMENTS
       String filePath = appDocumentsDirectory.absolute.path;
       List filenames = Directory(filePath)
           .listSync(followLinks: false, recursive: false)

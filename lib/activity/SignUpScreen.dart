@@ -43,7 +43,7 @@ class _SignUpState extends State<SignUpScreen> {
 
         User user = (await _auth.createUserWithEmailAndPassword(
                 email: email, password: password))
-            .user /* as FirebaseUser*/;
+            .user;
         if (user != null) {
           await FirebaseAuth.instance.currentUser
               .updateProfile(displayName: user.displayName);

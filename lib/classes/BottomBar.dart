@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
+//ignore: must_be_immutable
 class BottomBar extends StatelessWidget {
   List<Function> functions = [];
   BottomBar({@required this.functions});

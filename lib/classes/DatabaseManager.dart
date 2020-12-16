@@ -5,10 +5,8 @@ import 'package:wheelit/classes/Ticket.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:wheelit/classes/Transport.dart';
-import 'package:location/location.dart';
 import 'package:meta/meta.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class DatabaseManager {
   static Future<Map<String, Map>> getUsersList() async {

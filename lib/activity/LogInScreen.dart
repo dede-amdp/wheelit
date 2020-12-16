@@ -32,9 +32,8 @@ class _LoginState extends State<LoginScreen> {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
       try {
-        User user = (await _auth.signInWithEmailAndPassword(
-                email: _email, password: _password))
-            .user /*as FirebaseUser*/;
+        await _auth.signInWithEmailAndPassword(
+            email: _email, password: _password);
       } catch (e) {
         showError(e.message);
         print(e);

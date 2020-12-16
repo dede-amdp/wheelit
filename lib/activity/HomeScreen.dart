@@ -402,7 +402,7 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 //custom widgets
-
+//ignore: must_be_immutable
 class SearchBar extends StatefulWidget {
   Function onSearch, onSubmit;
 
