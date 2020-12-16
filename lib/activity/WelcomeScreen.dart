@@ -27,7 +27,7 @@ class _StartState extends State<WelcomeScreen> {
   }
 
   navigateToHomeScreen() async {
-    Navigator.pushReplacementNamed(context, '/home');
+    Navigator.popAndPushNamed(context, '/home');
   }
 
   @override
@@ -100,29 +100,31 @@ class _StartState extends State<WelcomeScreen> {
                 ],
               ),
               SizedBox(height: 20.0),
-              SignInButton(Buttons.Google,
-                  text: "Sign up with Google",
-                  onPressed: ()  {
-                        signInWithGoogle()
-                            .then((user) => navigateToHomeScreen())
-                            .whenComplete(() => showDialog(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                title: Text("Please complete your profile"),
-                                actions: <Widget>[
-                                  MaterialButton(
-                                    elevation: 5.0,
-                                    child: Text("OK"),
-                                    onPressed: () {
-                                      Navigator.pushReplacementNamed(context, '/account');
-                                    },
-                                  )
-                                ],
-                              );
-                            }),
-                        );
-                      }),
+              SignInButton(Buttons.Google, text: "Sign up with Google",
+                  onPressed: () {
+                signInWithGoogle()
+                    .then((user) => navigateToHomeScreen())
+                    .whenComplete(
+                      () => showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: Text("Please complete your profile"),
+                              actions: <Widget>[
+                                MaterialButton(
+                                  elevation: 5.0,
+                                  child: Text("OK"),
+                                  onPressed: () {
+                                    Navigator.pushReplacementNamed(
+                                        context, '/account');
+                                  },
+                                )
+                              ],
+                            );
+                          }),
+                    );
+              }),
             ],
           ),
         ),
@@ -130,12 +132,9 @@ class _StartState extends State<WelcomeScreen> {
     );
   }
 
-  void getLocationPermission() {
-    Location().getLocation().then((value) => {});
+  void getLocationPermission() async {
+    await Location().requestPermission();
   }
-
 }
 
-Future<AlertDialog> completeProfile() async {
-
-}
+Future<AlertDialog> completeProfile() async {}

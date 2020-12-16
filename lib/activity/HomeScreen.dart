@@ -5,7 +5,8 @@ import 'package:wheelit/classes/Ticket.dart';
 import 'package:wheelit/classes/DatabaseManager.dart';
 import 'package:wheelit/classes/BottomBar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
+//import 'package:location/location.dart';
+import 'package:wheelit/classes/LocationProvider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -46,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void signOut() async {
     await FirebaseAuth.instance.signOut();
     await googleSignIn.signOut();
-    Navigator.pushReplacementNamed(context, '/welcome');
+    Navigator.pushNamed(context, '/welcome');
   }
 
   @override
@@ -137,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Card(
             child: ListTile(
                 leading: Icon(Icons.description, color: Colors.white),
-                title: lastTicket == null
+                title: lastTicket != null
                     ? Text(
                         "Last Ticket bought on ${lastTicket.buyDate.split('-')[2]}/${lastTicket.buyDate.split('-')[1]}/${lastTicket.buyDate.split('-')[0]}",
                         style: TextStyle(color: Colors.white))
@@ -293,8 +294,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> getTicketButton() async {
-    String userEmail = user.email;
-    Map temp = await DatabaseManager.getTicketData(userEmail);
+    Map temp = await DatabaseManager.getTicketData(user.email);
 
     if (temp != null) {
       Ticket recent = Ticket.parseString(temp['0'].toString());
@@ -319,7 +319,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> getData() async {
     Function updateMap = (Map toAdd) {
       setState(() {
-        this.mezzi = toAdd;
+        if (mounted) this.mezzi = toAdd;
       });
     };
     DatabaseManager.getRealTimeTransportData(
@@ -327,13 +327,23 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> getLocation() async {
-    //await Permission.location.request();
-    Location l = Location();
-    l.onLocationChanged().listen((loc) {
+    Function f = (locationData) {
       setState(() {
-        userLocation = LatLng(loc.latitude, loc.longitude);
+        if (mounted)
+          this.userLocation =
+              LatLng(locationData.latitude, locationData.longitude);
       });
-    });
+    };
+    LocationProvider.getLocation(toUse: f);
+    /*Location l = Location();
+    if (await l.serviceEnabled()) {
+      l.onLocationChanged().listen((loc) {
+        setState(() {
+          if (mounted) userLocation = LatLng(loc.latitude, loc.longitude);
+        });
+      });
+    } else
+      print("NON ATTIVO");*/
   }
 
   Future<void> sortNearestforDrawer() async {

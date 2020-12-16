@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:wheelit/classes/LocationProvider.dart';
 import 'package:wheelit/classes/Ticket.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -75,7 +76,7 @@ class DatabaseManager {
         }
       });
     } catch (error) {
-      print(error.toString());
+      print('ERROR ${error.toString()}');
       data = null;
     }
     return data;
@@ -220,15 +221,15 @@ class DatabaseManager {
       @required Map toChange,
       LatLng userLoc}) async {
     LatLng userLocation = userLoc;
-    //await Permission.location.request();
-    //SEMBRA che il problema sia qui
-    //TODO: RISOLVERE IL PROBLEMA CHE CAUSA UN AVVIO INFINITO QUANDO L'APP è APPENA INSTALLATA E PRIVA DI PERMESSI
-    //*POSSIBLE SOLUTION? trovare un modo per attendere che tutte le richeieste siano fatte PRIMA di avviare l'app
     final Permission _permissionHandler = Permission.location;
     var result = await _permissionHandler.request();
     if (result.isGranted) {
+      /*
       Location().onLocationChanged().listen((event) async {
         userLocation = LatLng(event.latitude, event.longitude);
+      });*/
+      LocationProvider.getLocation(toUse: (position) {
+        userLocation = LatLng(position.latitude, position.longitude);
       });
       toChange = await getNearestTransport(userLocation);
       await Firebase.initializeApp();
@@ -312,31 +313,27 @@ class DatabaseManager {
     return data;
   }
 
-  static Future<void> setUser(String email, DateTime birthDate, String userName) async {
-
+  static Future<void> setUser(
+      String email, DateTime birthDate, String userName) async {
     await Firebase.initializeApp();
     final firestoreInstance = FirebaseFirestore.instance;
-    firestoreInstance.collection("users").doc(email).set(
-        {
-          "userName" : userName,
-          "birthDate" : birthDate,
-        },SetOptions(merge: true)
-    );
+    firestoreInstance.collection("users").doc(email).set({
+      "userName": userName,
+      "birthDate": birthDate,
+    }, SetOptions(merge: true));
   }
 
-  static Future<void> setPaymentCard(String email, String cvc, String carCode, String expirationDate) async {
-
+  static Future<void> setPaymentCard(
+      String email, String cvc, String carCode, String expirationDate) async {
     await Firebase.initializeApp();
     final firestoreInstance = FirebaseFirestore.instance;
     firestoreInstance.collection("paymentCards").add(
-        {
-          "owner" : email,
-          "cvc" : cvc,
-          "cardcode": carCode,
-          "expireDate" : expirationDate,
-        },
+      {
+        "owner": email,
+        "cvc": cvc,
+        "cardcode": carCode,
+        "expireDate": expirationDate,
+      },
     );
   }
 }
-
-
