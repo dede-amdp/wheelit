@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:wheelit/classes/DatabaseManager.dart';
 
 class SignUpScreen extends StatefulWidget {
   @override
@@ -11,6 +12,7 @@ class _SignUpState extends State<SignUpScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   DateTime birthDate = DateTime.now();
+  String userName;
   String email;
   String password;
   String carCode;
@@ -35,6 +37,10 @@ class _SignUpState extends State<SignUpScreen> {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
       try {
+
+        await DatabaseManager.setPaymentCard(email, cvc, carCode, expirationDate);
+        await DatabaseManager.setUser(email, birthDate, userName);
+
         User user = (await _auth.createUserWithEmailAndPassword(
             email: email, password: password)) as FirebaseUser;
         if (user != null) {
@@ -79,11 +85,25 @@ class _SignUpState extends State<SignUpScreen> {
                 fit: BoxFit.contain,
               ),
             ),
+            SizedBox(height: 6),
             Container(
               child: Form(
                 key: _formKey,
                 child: Column(
                   children: <Widget>[
+                    Container(
+                      child: TextFormField(
+                        // ignore: missing_return
+                          validator: (input) {
+                            if (input.isEmpty) {
+                              return '  Enter user name';
+                            }
+                          },
+                          decoration: InputDecoration(
+                              labelText: 'User name',
+                              prefixIcon: Icon(Icons.account_box_rounded)),
+                          onSaved: (input) => userName = input),
+                    ),
                     Container(
                       child: TextFormField(
                           // ignore: missing_return
@@ -128,7 +148,7 @@ class _SignUpState extends State<SignUpScreen> {
                       child: TextFormField(
                           // ignore: missing_return
                           validator: (input) {
-                            if (input.length < 16) {
+                            if (input.length < 16 || input.length > 16) {
                               return '  Invalid code';
                             }
                           },
@@ -144,7 +164,7 @@ class _SignUpState extends State<SignUpScreen> {
                         children: <Widget>[
                           TextFormField(
                               validator: (input) {
-                                if (input.length < 3) {
+                                if (input.length < 3 || input.length > 3) {
                                   return '  Invalid code';
                                 } else {
                                   return null;

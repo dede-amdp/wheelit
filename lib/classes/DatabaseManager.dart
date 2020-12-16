@@ -7,6 +7,7 @@ import 'package:wheelit/classes/Transport.dart';
 import 'package:location/location.dart';
 import 'package:meta/meta.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class DatabaseManager {
   static Future<Map<String, Map>> getUsersList() async {
@@ -310,4 +311,32 @@ class DatabaseManager {
     }
     return data;
   }
+
+  static Future<void> setUser(String email, DateTime birthDate, String userName) async {
+
+    await Firebase.initializeApp();
+    final firestoreInstance = FirebaseFirestore.instance;
+    firestoreInstance.collection("users").doc(email).set(
+        {
+          "userName" : userName,
+          "birthDate" : birthDate,
+        },SetOptions(merge: true)
+    );
+  }
+
+  static Future<void> setPaymentCard(String email, String cvc, String carCode, String expirationDate) async {
+
+    await Firebase.initializeApp();
+    final firestoreInstance = FirebaseFirestore.instance;
+    firestoreInstance.collection("paymentCards").add(
+        {
+          "owner" : email,
+          "cvc" : cvc,
+          "cardcode": carCode,
+          "expireDate" : expirationDate,
+        },
+    );
+  }
 }
+
+

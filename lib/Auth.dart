@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:wheelit/classes/DatabaseManager.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 final GoogleSignIn googleSignIn = GoogleSignIn();
@@ -19,5 +20,6 @@ Future<User> signInWithGoogle() async {
   assert(await user.getIdToken() != null);
   final User currentuser = _auth.currentUser;
   assert(currentuser.uid == user.uid);
+  DatabaseManager.setUser(user.email, null, user.displayName);
   return user;
 }

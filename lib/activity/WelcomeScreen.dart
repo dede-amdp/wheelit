@@ -44,7 +44,7 @@ class _StartState extends State<WelcomeScreen> {
               SizedBox(height: 20),
               RichText(
                   text: TextSpan(
-                      text: 'Benvenuto su ',
+                      text: 'Welcome to ',
                       style: TextStyle(
                           fontSize: 25.0,
                           fontWeight: FontWeight.bold,
@@ -59,7 +59,7 @@ class _StartState extends State<WelcomeScreen> {
                   ])),
               SizedBox(height: 10.0),
               Text(
-                "L'app per la smart mobility",
+                "The app for smart mobility",
                 style: TextStyle(fontSize: 20.0, color: Colors.black),
               ),
               SizedBox(height: 30.0),
@@ -102,9 +102,26 @@ class _StartState extends State<WelcomeScreen> {
               SizedBox(height: 20.0),
               SignInButton(Buttons.Google,
                   text: "Sign up with Google",
-                  onPressed: () => {
+                  onPressed: ()  {
                         signInWithGoogle()
                             .then((user) => navigateToHomeScreen())
+                            .whenComplete(() => showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: Text("Please complete your profile"),
+                                actions: <Widget>[
+                                  MaterialButton(
+                                    elevation: 5.0,
+                                    child: Text("OK"),
+                                    onPressed: () {
+                                      Navigator.pushReplacementNamed(context, '/account');
+                                    },
+                                  )
+                                ],
+                              );
+                            }),
+                        );
                       }),
             ],
           ),
@@ -116,4 +133,9 @@ class _StartState extends State<WelcomeScreen> {
   void getLocationPermission() {
     Location().getLocation().then((value) => {});
   }
+
+}
+
+Future<AlertDialog> completeProfile() async {
+
 }
