@@ -5,7 +5,6 @@ import 'package:wheelit/classes/Ticket.dart';
 import 'package:wheelit/classes/DatabaseManager.dart';
 import 'package:wheelit/classes/BottomBar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-//import 'package:location/location.dart';
 import 'package:wheelit/classes/LocationProvider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -164,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Icon(Icons.battery_full, color: Colors.green),
                     Text("${value['battery']}%\t"),
                     Text(
-                        "distance: ${Geolocator.distanceBetween(userLocation.latitude, userLocation.longitude, value['position'].latitude, value['position'].longitude).ceil()}")
+                        "distance: ${Geolocator.distanceBetween(userLocation.latitude, userLocation.longitude, value['position'].latitude, value['position'].longitude).ceil()} mt")
                   ]),
                   onTap: () {
                     _gmc.animateCamera(CameraUpdate.newCameraPosition(
@@ -297,14 +296,16 @@ class _HomeScreenState extends State<HomeScreen> {
     Map temp = await DatabaseManager.getTicketData(user.email);
 
     if (temp != null) {
-      if (temp.isEmpty)
+      if (temp.isEmpty) {
         setState(() {
           this.lastTicket = null;
         });
-      Ticket recent = Ticket.parseString(temp['0'].toString());
-      setState(() {
-        if (mounted) this.lastTicket = recent;
-      });
+      } else {
+        Ticket recent = Ticket.parseString(temp['0'].toString());
+        setState(() {
+          if (mounted) this.lastTicket = recent;
+        });
+      }
     } else {
       setState(() {
         if (mounted) this.lastTicket = null;

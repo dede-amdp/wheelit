@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:wheelit/classes/DatabaseManager.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:wheelit/classes/Ticket.dart';
+import 'package:wheelit/activity/TicketScreen.dart';
 
 //ignore: must_be_immutable
 class StationScreen extends StatefulWidget {
@@ -9,10 +12,14 @@ class StationScreen extends StatefulWidget {
   _StationScreenState createState() => _StationScreenState();
 }
 
-class _StationScreenState extends State<StationScreen> {
+class _StationScreenState extends State<StationScreen>
+    with TickerProviderStateMixin {
   List<Widget> lines = [Center(child: CircularProgressIndicator())];
   Map routes;
   Map toShow;
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  User user = FirebaseAuth.instance.currentUser;
+  Widget popUp;
 
   @override
   void initState() {
@@ -23,6 +30,7 @@ class _StationScreenState extends State<StationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
           backgroundColor: Theme.of(context).accentColor,
           title: Text(widget.name)),
@@ -58,12 +66,22 @@ class _StationScreenState extends State<StationScreen> {
       toUse.add(Card(
           child: ListTile(
               title: Text(value['public']),
-              subtitle: Text('${value['day']} on ${value['time']}'),
+              subtitle: Text(toSchedule(value['days'], value['times'])),
               onTap: () {
-                print("AcquistaBiglietto");
+                buyTicket(user.email, value['public']);
               })));
     });
     setState(() => this.lines = toUse);
+  }
+
+  String toSchedule(List days, List times) {
+    String toReturn = '';
+    if (days == null && times == null) return 'No data found';
+    if (days.length != times.length) return 'No schedule found';
+    for (int i = 0; i < days.length; i++) {
+      toReturn += days[i] + "\ton " + times[i] + '\n';
+    }
+    return toReturn;
   }
 
   void search(String text) {
@@ -80,5 +98,175 @@ class _StationScreenState extends State<StationScreen> {
       this.toShow = toShow;
       toWidget(toShow);
     });
+  }
+
+  void buyTicket(String email, String line) async {
+    Map lineData = await DatabaseManager.getLineInfo(line);
+    Map userData = await DatabaseManager.getUserData(user.email);
+    buildSnackBar(userData, lineData);
+  }
+
+  void buildSnackBar(Map userData, Map lineData,
+      {DateTime chosenDate, int initialIndex = 0}) async {
+    TabController _controller = TabController(
+        length: lineData.values.toList()[0]['prices'].length,
+        vsync: this,
+        initialIndex: initialIndex);
+    SnackBar snb = SnackBar(
+        onVisible: () => _scaffoldKey.currentState.showBodyScrim(true, 0.5),
+        backgroundColor: Theme.of(context).accentColor,
+        duration: Duration(days: 365),
+        content: Container(
+            child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                      child: TabBar(
+                          isScrollable: true,
+                          controller: _controller,
+                          tabs: createTabBar(
+                              lineData.values.toList()[0]['prices']))),
+                  Container(
+                      height: 200,
+                      child: TabBarView(
+                        controller: _controller,
+                        physics: BouncingScrollPhysics(),
+                        children: await createTabs(
+                            lineData.values.toList()[0]['prices'],
+                            userData: userData,
+                            lineData: lineData,
+                            chosenDate: chosenDate,
+                            initialIndex: initialIndex,
+                            controller: _controller),
+                      ))
+                ]),
+            color: Colors.transparent),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)));
+    _scaffoldKey.currentState.showSnackBar(snb).closed.whenComplete(() {
+      _scaffoldKey.currentState.showBodyScrim(false, 0.5);
+    });
+  }
+
+  List<Tab> createTabBar(Map prices) {
+    List<Tab> toReturn = [];
+    prices.keys.forEach((key) {
+      toReturn.add(Tab(
+          child: Text(key.toString().toUpperCase(),
+              style: TextStyle(fontSize: 18.0))));
+    });
+    return toReturn;
+  }
+
+  Future<List<Widget>> createTabs(Map ticketPrices,
+      {Map userData,
+      Map lineData,
+      DateTime chosenDate,
+      int initialIndex = 0,
+      TabController controller}) async {
+    if (chosenDate == null) chosenDate = DateTime.now();
+    List<Widget> tabs = [];
+    ticketPrices.forEach((key, value) {
+      tabs.add(Container(
+          child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+            Text("PRICE: ${value.toString().toUpperCase()}€",
+                style: TextStyle(fontSize: 24.0)),
+            key.toString().toLowerCase() == 'singleuse'
+                ? Text("Single use ticket")
+                : FlatButton.icon(
+                    label: Text(
+                        'Chose a start Date\n${chosenDate.day.toString()}/${chosenDate.month.toString()}/${chosenDate.year.toString()}',
+                        style: TextStyle(fontSize: 24.0)),
+                    icon: Icon(Icons.calendar_today, size: 32.0),
+                    onPressed: () => showDate(
+                        userData: userData,
+                        lineData: lineData,
+                        initialIndex: controller.index)),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+              FlatButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0)),
+                  color: Colors.white,
+                  onPressed: () {
+                    if (userData['paymentCard'] == null) {
+                      Navigator.pushNamed(context, '/account')
+                          .whenComplete(() => showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                    content: Text(
+                                        'Add a Payment Card to buy a ticket'));
+                              }));
+                    } else {
+                      DatabaseManager.setTicketData(Ticket(
+                          used: false,
+                          mezzi: {
+                            lineData.keys.toList()[0]:
+                                lineData.values.toList()[0]['type']
+                          },
+                          email: user.email,
+                          buyTime:
+                              TicketScreen.toLocalDateTime(DateTime.now())[1],
+                          buyDate:
+                              TicketScreen.toLocalDateTime(DateTime.now())[0],
+                          type: key.toString().toLowerCase() == 'singleuse'
+                              ? TicketType.NORMAL
+                              : TicketType.PASS,
+                          startDate: key.toString().toLowerCase() != 'singleuse'
+                              ? TicketScreen.toLocalDateTime(chosenDate)[0]
+                                  .toString()
+                              : '',
+                          endDate: key.toString().toLowerCase() == 'weekly'
+                              ? TicketScreen.toLocalDateTime(
+                                      chosenDate.add(Duration(days: 7)))[0]
+                                  .toString()
+                              : key.toString().toLowerCase() == 'monthly'
+                                  ? TicketScreen.toLocalDateTime(
+                                          chosenDate.add(Duration(days: 29)))[0]
+                                      .toString()
+                                  : key.toString().toLowerCase() == 'biweekly'
+                                      ? TicketScreen.toLocalDateTime(chosenDate
+                                              .add(Duration(days: 15)))[0]
+                                          .toString()
+                                      : ''));
+                    }
+                    _scaffoldKey.currentState.showBodyScrim(false, 0.5);
+                    _scaffoldKey.currentState.hideCurrentSnackBar();
+                  },
+                  child: Icon(Icons.check_rounded,
+                      color: Theme.of(context).accentColor)),
+              FlatButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0)),
+                  color: Colors.white,
+                  onPressed: () {
+                    _scaffoldKey.currentState.showBodyScrim(false, 0.5);
+                    _scaffoldKey.currentState.hideCurrentSnackBar();
+                  },
+                  child: Icon(Icons.cancel_outlined, color: Colors.red))
+            ])
+          ])));
+    });
+    return tabs;
+  }
+
+  void showDate({Map userData, Map lineData, int initialIndex = 0}) async {
+    DateTime chosenDate = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime.now(),
+        lastDate: DateTime(DateTime.now().year + 100));
+    if (chosenDate != null) {
+      setState(() {
+        _scaffoldKey.currentState.hideCurrentSnackBar();
+        buildSnackBar(userData, lineData,
+            chosenDate: chosenDate, initialIndex: initialIndex);
+      });
+    }
   }
 }

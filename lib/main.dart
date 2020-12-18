@@ -18,16 +18,12 @@ void main() async {
       '/home': (context) => HomeScreen(),
       '/account': (context) => AccountScreen(),
       '/ticket': (context) => TicketScreen(),
-      '/welcome' : (context) => WelcomeScreen(),
+      '/welcome': (context) => WelcomeScreen(),
       '/login': (context) => LoginScreen(),
       '/station': (context) => StationScreen(),
       '/signUp': (context) => SignUpScreen(),
       '/reset': (context) => ForgotPasswordScreen(),
-      },
-
-       initialRoute: '/welcome',
-
-    )
-  );
+    },
+    initialRoute: '/welcome',
+  ));
 }
-

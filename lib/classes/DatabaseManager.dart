@@ -29,7 +29,7 @@ class DatabaseManager {
 
   static Future<Map> getUserData(String userEmail) async {
     await Firebase.initializeApp();
-    Map data = {};
+    Map<String, dynamic> data = <String, dynamic>{};
     CollectionReference usersCollection =
         FirebaseFirestore.instance.collection('users');
     CollectionReference paymentCardsCollection =
@@ -43,11 +43,11 @@ class DatabaseManager {
           .get()
           .then((value) {
         value.docs.forEach((element) {
-          data.addAll(element.data());
+          data.addAll({'paymentCard': element.data()});
         });
       });
     } catch (error) {
-      print(error.toString());
+      print('ERROR: ${error.toString()}');
       data = null;
     }
     return data;
@@ -287,6 +287,16 @@ class DatabaseManager {
         FirebaseFirestore.instance.collection('electric');
     return await eleCollection
         .doc(transportCode)
+        .get()
+        .then((value) => {value.id: value.data()});
+  }
+
+  static Future<Map> getLineInfo(String line) async {
+    await Firebase.initializeApp();
+    CollectionReference publicCollection =
+        FirebaseFirestore.instance.collection('public');
+    return await publicCollection
+        .doc(line)
         .get()
         .then((value) => {value.id: value.data()});
   }
