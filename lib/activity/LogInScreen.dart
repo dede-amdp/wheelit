@@ -14,18 +14,9 @@ class _LoginState extends State<LoginScreen> {
   String _password;
   bool emailValid = false;
 
-  checkAuthentification() async {
-    _auth.authStateChanges().listen((user) {
-      if (user != null) {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
-    });
-  }
-
   @override
   void initState() {
     super.initState();
-    this.checkAuthentification();
   }
 
   login() async {
