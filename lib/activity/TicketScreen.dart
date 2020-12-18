@@ -34,8 +34,8 @@ class _TicketScreenState extends State<TicketScreen> {
 
   @override
   void initState() {
-    super.initState();
     getUserTicket();
+    super.initState();
   }
 
   @override
@@ -103,6 +103,7 @@ class _TicketScreenState extends State<TicketScreen> {
   }
 
   Future<void> getUserTicket() async {
+    await DatabaseManager.updateTickets(user.email);
     Map tickets = await DatabaseManager.getTicketData(user.email);
     List<Ticket> temp = [];
     tickets.forEach((key, value) {

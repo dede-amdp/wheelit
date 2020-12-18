@@ -136,5 +136,3 @@ class _StartState extends State<WelcomeScreen> {
     await Location().requestPermission();
   }
 }
-
-Future<AlertDialog> completeProfile() async {}

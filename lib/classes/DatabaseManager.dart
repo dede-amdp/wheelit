@@ -345,4 +345,20 @@ class DatabaseManager {
       },
     );
   }
+
+  static Future<void> updateTickets(String email) async {
+    await Firebase.initializeApp();
+    CollectionReference ticketsCollection =
+        FirebaseFirestore.instance.collection('tickets');
+    await ticketsCollection
+        .where('user', isEqualTo: email)
+        .where('type', isEqualTo: "PASS")
+        .where('endDate', isLessThan: Timestamp.fromDate(DateTime.now()))
+        .get()
+        .then((snapshot) {
+      snapshot.docs.forEach((document) {
+        ticketsCollection.doc(document.id).update({'used': true});
+      });
+    });
+  }
 }

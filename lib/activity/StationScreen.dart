@@ -193,15 +193,21 @@ class _StationScreenState extends State<StationScreen>
                       borderRadius: BorderRadius.circular(15.0)),
                   color: Colors.white,
                   onPressed: () {
-                    if (userData['paymentCard'] == null) {
-                      Navigator.pushNamed(context, '/account')
-                          .whenComplete(() => showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                    content: Text(
-                                        'Add a Payment Card to buy a ticket'));
-                              }));
+                    if (userData['paymentCard'] == null ||
+                        userData['birthDate'] == null) {
+                      showDialog(
+                          barrierDismissible: false,
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                                title:
+                                    Text('Add a Payment Card to buy a ticket'),
+                                content: FlatButton.icon(
+                                    onPressed: () => Navigator.pushNamed(
+                                        context, '/account'),
+                                    icon: Icon(Icons.account_circle_rounded),
+                                    label: Text('Go to Account Screen')));
+                          });
                     } else {
                       DatabaseManager.setTicketData(Ticket(
                           used: false,
