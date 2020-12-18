@@ -7,7 +7,6 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class TicketScreen extends StatefulWidget {
   @override
@@ -161,12 +160,10 @@ Future<String> downloadPdf(Ticket t) async {
       File file = File('$filePath$fileName.pdf');
       file.writeAsBytesSync(doc.save(), mode: FileMode.writeOnly);
       doc.dispose();
-
       return fileName;
     }
   } catch (error) {
     print('ERROR: ${error.toString()}');
     return null;
   }
-  return null;
 }

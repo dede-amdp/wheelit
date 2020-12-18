@@ -8,6 +8,7 @@ import 'package:wheelit/activity/LoginScreen.dart';
 import 'package:wheelit/activity/WelcomeScreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:wheelit/activity/StationScreen.dart';
+import 'package:wheelit/activity/RentScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,7 +24,8 @@ void main() async {
       '/station': (context) => StationScreen(),
       '/signUp': (context) => SignUpScreen(),
       '/reset': (context) => ForgotPasswordScreen(),
+      '/rent': (context) => RentScreen(),
     },
-    initialRoute: '/welcome',
+    initialRoute: '/rent',
   ));
 }
