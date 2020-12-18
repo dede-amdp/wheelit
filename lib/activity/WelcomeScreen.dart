@@ -103,27 +103,7 @@ class _StartState extends State<WelcomeScreen> {
               SignInButton(Buttons.Google, text: "Sign up with Google",
                   onPressed: () {
                 signInWithGoogle()
-                    .then((user) => navigateToHomeScreen())
-                    .whenComplete(
-                      () => showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: Text("Please complete your profile"),
-                              actions: <Widget>[
-                                MaterialButton(
-                                  elevation: 5.0,
-                                  child: Text("OK"),
-                                  onPressed: () {
-                                    Navigator.pushReplacementNamed(
-                                        context, '/account');
-                                  },
-                                )
-                              ],
-                            );
-                          }),
-                    );
+                    .then((user) => navigateToHomeScreen());
               }),
             ],
           ),
