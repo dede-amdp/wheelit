@@ -10,11 +10,13 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _StartState extends State<WelcomeScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   User user;
 
   @override
   initState() {
     getLocationPermission();
+    checkAuthentification();
     super.initState();
   }
 
@@ -28,6 +30,14 @@ class _StartState extends State<WelcomeScreen> {
 
   navigateToHomeScreen() async {
     Navigator.popAndPushNamed(context, '/home');
+  }
+
+  checkAuthentification() async {
+    _auth.authStateChanges().listen((user) {
+      if (user != null) {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    });
   }
 
   @override
