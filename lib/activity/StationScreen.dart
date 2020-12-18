@@ -200,6 +200,8 @@ class _StationScreenState extends State<StationScreen>
                           context: context,
                           builder: (context) {
                             return AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15.0)),
                                 title:
                                     Text('Add a Payment Card to buy a ticket'),
                                 content: FlatButton.icon(
