@@ -10,7 +10,6 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _StartState extends State<WelcomeScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   User user;
 
   @override
