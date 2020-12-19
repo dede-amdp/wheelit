@@ -2,6 +2,8 @@ import 'dart:math';
 import 'package:wheelit/classes/Transport.dart';
 import 'package:flutter/material.dart';
 import 'package:wheelit/classes/Ticket.dart';
+import 'package:wheelit/activity/TicketScreen.dart';
+import 'package:wheelit/activity/RentScreen.dart';
 import 'package:wheelit/classes/DatabaseManager.dart';
 import 'package:wheelit/classes/BottomBar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -19,20 +21,19 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Map mezzi;
+  Map rented;
   Ticket recent;
   LatLng userLocation;
   GoogleMapController _gmc;
   TransportType filterType;
   Ticket lastTicket;
-  List toShowInDrawer;
-  List searchResults;
+  List toShowInDrawer, searchResults;
   List<String> searchOptionList = [];
-  String qr = "";
   User user = FirebaseAuth.instance.currentUser;
   final GoogleSignIn googleSignIn = GoogleSignIn();
 
   Future<void> scanQrCode() async {
-    qr = await FlutterBarcodeScanner.scanBarcode(
+    String qr = await FlutterBarcodeScanner.scanBarcode(
         "#ffffff", "INDIETRO", true, ScanMode.QR);
     setState(() {
       if (mounted) floatingRent(qr);
@@ -54,6 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
     getLocation();
     getData();
     getTicketButton();
+    getRentedVehicles();
     super.initState();
   }
 
@@ -150,6 +152,37 @@ class _HomeScreenState extends State<HomeScreen> {
                 tileColor: Theme.of(context).accentColor,
                 onTap: () => Navigator.pushNamed(context, '/ticket'))),
       ];
+      if (this.rented != null) {
+        this.rented.forEach((key, value) {
+          String date =
+              TicketScreen.toLocalDateTime(value['startRent'].toDate())[0];
+          String time =
+              TicketScreen.toLocalDateTime(value['startRent'].toDate())[1]
+                  .split('.')[0];
+          options.add(Card(
+              color: Theme.of(context).accentColor,
+              child: ListTile(
+                  leading: Icon(
+                    value['type'] == 'BIKE'
+                        ? Icons.electric_bike
+                        : Icons.electric_scooter,
+                    color: Colors.white,
+                  ),
+                  title: Text(
+                    'Rented on:\t${date.split('-')[2]}/${date.split('-')[1]}/${date.split('-')[0]}\n at $time',
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => RentScreen(
+                                codeMezzo: value['electric'],
+                                fromDrawer: true,
+                              ))))));
+        });
+      }
       if (this.toShowInDrawer != null) {
         this.toShowInDrawer.forEach((mezzo) {
           Map value = mezzo.value;
@@ -178,6 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   })));
         });
       }
+
       return Scaffold(
           drawer: Drawer(child: ListView(children: options)),
           //endDrawer: Drawer(),
@@ -265,25 +299,41 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void floatingRent(String qr) async {
     if (qr != "" && qr != "-1") {
-      Map m = (await DatabaseManager.getTransportInfo(qr))[qr];
-      String toShow = qr.toString() +
-          '\nType: ' +
-          m['type'].toString() +
-          "\nBattery:" +
-          m['battery'].toString();
+      Map infoMezzo = (await DatabaseManager.getTransportInfo(qr))[qr];
       showDialog(
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: Text(toShow),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0)),
+              content: Container(
+                  child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                    Row(children: [
+                      Icon(infoMezzo['type'] == 'SCOOTER'
+                          ? Icons.electric_scooter
+                          : Icons.electric_bike),
+                      Text("\t${infoMezzo['type']}\t"),
+                    ]),
+                    Row(children: [
+                      Icon(Icons.battery_full, color: Colors.green),
+                      Text("\t${infoMezzo['battery']}%\t")
+                    ])
+                  ])),
+              title: Text('General Information:'),
               actions: <Widget>[
                 MaterialButton(
                   elevation: 5.0,
                   child: Text("RENT"),
                   onPressed: () {
-                    DatabaseManager.setStartRent(
-                        userEmail: this.user.email, transportCode: qr);
                     Navigator.pop(context);
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                RentScreen(codeMezzo: qr, fromDrawer: false)));
                   },
                 )
               ],
@@ -293,24 +343,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> getTicketButton() async {
-    Map temp = await DatabaseManager.getTicketData(user.email);
-
-    if (temp != null) {
-      if (temp.isEmpty) {
-        setState(() {
-          this.lastTicket = null;
-        });
-      } else {
-        Ticket recent = Ticket.parseString(temp['0'].toString());
-        setState(() {
-          if (mounted) this.lastTicket = recent;
-        });
-      }
-    } else {
+    Function onChanged = (Ticket t) {
       setState(() {
-        if (mounted) this.lastTicket = null;
+        if (mounted) this.lastTicket = t;
       });
-    }
+    };
+
+    DatabaseManager.getRealTimeRecentTicket(user.email,
+        onChanged: onChanged, toChange: this.lastTicket);
   }
 
   Function filterPerType({TransportType transportType}) {
@@ -399,6 +439,16 @@ class _HomeScreenState extends State<HomeScreen> {
               zoom: 18)));
       });
     }
+  }
+
+  void getRentedVehicles() async {
+    Function onChanged = (Map data) {
+      setState(() {
+        if (mounted) this.rented = data;
+      });
+    };
+    DatabaseManager.getRented(user.email,
+        onChanged: onChanged, toChange: this.rented);
   }
 }
 

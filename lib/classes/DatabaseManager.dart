@@ -268,32 +268,46 @@ class DatabaseManager {
         FirebaseFirestore.instance.collection('rented');
     CollectionReference eleCollection =
         FirebaseFirestore.instance.collection('electric');
-    rentCollection.add({
-      'electric': transportCode,
-      'user': userEmail,
-      'startRent': DateTime.now().toString()
-    });
-    eleCollection.doc(transportCode).update({'state': 'RENTED'});
+    try {
+      rentCollection.add({
+        'electric': transportCode,
+        'user': userEmail,
+        'startRent': DateTime.now(),
+      });
+      eleCollection.doc(transportCode).update({'state': 'RENTED'});
+    } catch (error) {
+      print('ERROR ${error.toString()}');
+    }
   }
 
   static Future<Map> getTransportInfo(String transportCode) async {
     await Firebase.initializeApp();
     CollectionReference eleCollection =
         FirebaseFirestore.instance.collection('electric');
-    return await eleCollection
-        .doc(transportCode)
-        .get()
-        .then((value) => {value.id: value.data()});
+    try {
+      return await eleCollection
+          .doc(transportCode)
+          .get()
+          .then((value) => {value.id: value.data()});
+    } catch (error) {
+      print('ERROR ${error.toString()}');
+    }
+    return null;
   }
 
   static Future<Map> getLineInfo(String line) async {
     await Firebase.initializeApp();
     CollectionReference publicCollection =
         FirebaseFirestore.instance.collection('public');
-    return await publicCollection
-        .doc(line)
-        .get()
-        .then((value) => {value.id: value.data()});
+    try {
+      return await publicCollection
+          .doc(line)
+          .get()
+          .then((value) => {value.id: value.data()});
+    } catch (error) {
+      print('ERROR ${error.toString()}');
+    }
+    return null;
   }
 
   static Future<Map> getLinestoStation(String stationName) async {
@@ -321,49 +335,64 @@ class DatabaseManager {
       String email, DateTime birthDate, String userName) async {
     await Firebase.initializeApp();
     final firestoreInstance = FirebaseFirestore.instance;
-    firestoreInstance.collection("users").doc(email).set({
-      "userName": userName,
-      "birthDate": birthDate,
-    }, SetOptions(merge: true));
+    try {
+      firestoreInstance.collection("users").doc(email).set({
+        "userName": userName,
+        "birthDate": birthDate,
+      }, SetOptions(merge: true));
+    } catch (error) {
+      print('ERROR ${error.toString()}');
+    }
   }
 
-  static Future<void> setGoogleUser(
-      String email, String userName) async {
+  static Future<void> setGoogleUser(String email, String userName) async {
     await Firebase.initializeApp();
     final firestoreInstance = FirebaseFirestore.instance;
-    firestoreInstance.collection("users").doc(email).set({
-      "userName": userName,
-    }, SetOptions(merge: true));
+    try {
+      firestoreInstance.collection("users").doc(email).set({
+        "userName": userName,
+      }, SetOptions(merge: true));
+    } catch (error) {
+      print('ERROR ${error.toString()}');
+    }
   }
 
   static Future<void> setPaymentCard(
       String email, String cvc, String carCode, String expirationDate) async {
     await Firebase.initializeApp();
     final firestoreInstance = FirebaseFirestore.instance;
-    firestoreInstance.collection("paymentCards").add(
-      {
-        "owner": email,
-        "cvc": cvc,
-        "cardcode": carCode,
-        "expireDate": expirationDate,
-      },
-    );
+    try {
+      firestoreInstance.collection("paymentCards").add(
+        {
+          "owner": email,
+          "cvc": cvc,
+          "cardcode": carCode,
+          "expireDate": expirationDate,
+        },
+      );
+    } catch (error) {
+      print('ERROR ${error.toString()}');
+    }
   }
 
   static Future<void> updateTickets(String email) async {
     await Firebase.initializeApp();
     CollectionReference ticketsCollection =
         FirebaseFirestore.instance.collection('tickets');
-    await ticketsCollection
-        .where('user', isEqualTo: email)
-        .where('type', isEqualTo: "PASS")
-        .where('endDate', isLessThan: Timestamp.fromDate(DateTime.now()))
-        .get()
-        .then((snapshot) {
-      snapshot.docs.forEach((document) {
-        ticketsCollection.doc(document.id).update({'used': true});
+    try {
+      await ticketsCollection
+          .where('user', isEqualTo: email)
+          .where('type', isEqualTo: "PASS")
+          .where('endDate', isLessThan: Timestamp.fromDate(DateTime.now()))
+          .get()
+          .then((snapshot) {
+        snapshot.docs.forEach((document) {
+          ticketsCollection.doc(document.id).update({'used': true});
+        });
       });
-    });
+    } catch (error) {
+      print('ERROR ${error.toString()}');
+    }
   }
 
   static Future<void> updatePassword(String password) async {
@@ -371,5 +400,118 @@ class DatabaseManager {
     User user = FirebaseAuth.instance.currentUser;
     user.updatePassword(password);
   }
-}
 
+  static Future<void> getRented(String userEmail,
+      {Function onChanged, Map toChange}) async {
+    toChange = {};
+    await Firebase.initializeApp();
+    CollectionReference rentedCollection =
+        FirebaseFirestore.instance.collection('rented');
+    try {
+      rentedCollection
+          .where('user', isEqualTo: userEmail)
+          .snapshots()
+          .listen((event) {
+        if (event != null) {
+          event.docChanges.forEach((document) {
+            if (document.doc.data()['endRent'] == null) {
+              toChange.addAll({document.doc.id: document.doc.data()});
+            } else {
+              toChange.remove(document.doc.id);
+            }
+            onChanged(toChange);
+          });
+        }
+      });
+    } catch (error) {
+      print('ERROR ${error.toString()}');
+    }
+  }
+
+  static Future<void> getRealTimeRecentTicket(String userEmail,
+      {Function onChanged, Ticket toChange}) async {
+    await Firebase.initializeApp();
+    CollectionReference ticketCollection =
+        FirebaseFirestore.instance.collection('tickets');
+    try {
+      ticketCollection
+          .where('user', isEqualTo: userEmail)
+          .orderBy('buyTimeStamp', descending: true)
+          .snapshots()
+          .listen((docChanges) {
+        if (docChanges != null) {
+          Map lastTicketMap = {
+            docChanges.docChanges[0].doc.id: docChanges.docChanges[0].doc.data()
+          };
+          if (lastTicketMap != null) {
+            if (lastTicketMap.isNotEmpty) {
+              toChange = Ticket.parseString(lastTicketMap.toString());
+              onChanged(toChange);
+            }
+          }
+        }
+      });
+    } catch (error) {
+      print('ERROR ${error.toString()}');
+    }
+  }
+
+  static Future<bool> isRented(String code) async {
+    await Firebase.initializeApp();
+    CollectionReference rentRef =
+        FirebaseFirestore.instance.collection('rented');
+    try {
+      await rentRef.where('electric', isEqualTo: code).get().then((docs) {
+        if (docs == null)
+          return false;
+        else {
+          docs.docs.forEach((document) {
+            if (document.data()['endRent'] == null) return true;
+          });
+          return false;
+        }
+      });
+    } catch (error) {
+      print('ERROR ${error.toString()}');
+    }
+    return false;
+  }
+
+  static Future<bool> isSameUser(String email, String code) async {
+    await Firebase.initializeApp();
+    CollectionReference rentRef =
+        FirebaseFirestore.instance.collection('rented');
+    try {
+      await rentRef.where('electric', isEqualTo: code).get().then((docs) {
+        docs.docs.forEach((document) {
+          if (document.data()['endRent'] == null) {
+            return document.data()['user'] == email;
+          }
+        });
+      });
+    } catch (error) {
+      print('ERROR ${error.toString()}');
+    }
+    return false;
+  }
+
+  static Future<void> setEndRent(String userEmail, String code) async {
+    await Firebase.initializeApp();
+    CollectionReference rentRef =
+        FirebaseFirestore.instance.collection('rented');
+    try {
+      await rentRef
+          .where('user', isEqualTo: userEmail)
+          .where('electric', isEqualTo: code)
+          .orderBy('startRent', descending: true)
+          .get()
+          .then((document) {
+        if (document != null) {
+          rentRef.doc(document.docs[0].id).update({'endRent': DateTime.now()});
+        }
+      });
+    } catch (error) {
+      print('ERROR ${error.toString()}');
+    }
+  }
+}

@@ -11,7 +11,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 class TicketScreen extends StatefulWidget {
   @override
   _TicketScreenState createState() => _TicketScreenState();
-  //TODO: AGGIUNGERE FILTRO PER USED
 
   //Metodo usato per convertire DateTime in data e ora comprensibili da un utente
   static List toLocalDateTime(DateTime dt) {
