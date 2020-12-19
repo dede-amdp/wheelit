@@ -29,8 +29,8 @@ class _SignUpState extends State<SignUpScreen> {
 
   @override
   void initState() {
-    super.initState();
     this.checkAuthentication();
+    super.initState();
   }
 
   void signUp() async {

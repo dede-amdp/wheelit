@@ -16,7 +16,6 @@ class _StartState extends State<WelcomeScreen> {
   @override
   initState() {
     getLocationPermission();
-    checkAuthentification();
     super.initState();
   }
 
@@ -32,13 +31,6 @@ class _StartState extends State<WelcomeScreen> {
     Navigator.popAndPushNamed(context, '/home');
   }
 
-  checkAuthentification() async {
-    _auth.authStateChanges().listen((user) {
-      if (user != null) {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {

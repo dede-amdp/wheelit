@@ -7,8 +7,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginState extends State<LoginScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseAuth _auth = FirebaseAuth.instance;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  User user = FirebaseAuth.instance.currentUser;
 
   String _email;
   String _password;
@@ -16,6 +17,7 @@ class _LoginState extends State<LoginScreen> {
 
   @override
   void initState() {
+    checkAuthentification();
     super.initState();
   }
 
@@ -30,6 +32,14 @@ class _LoginState extends State<LoginScreen> {
         print(e);
       }
     }
+  }
+
+  checkAuthentification() async {
+    _auth.authStateChanges().listen((user) {
+      if (user != null) {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    });
   }
 
   showError(String errormessage) {
@@ -48,6 +58,14 @@ class _LoginState extends State<LoginScreen> {
             ],
           );
         });
+  }
+
+  void checkAuthentication() async {
+    _auth.authStateChanges().listen((user) async {
+      if (user != null) {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    });
   }
 
   @override
