@@ -223,13 +223,6 @@ class DatabaseManager {
     final Permission _permissionHandler = Permission.location;
     var result = await _permissionHandler.request();
     if (result.isGranted) {
-      /*
-      Location().onLocationChanged().listen((event) async {
-        userLocation = LatLng(event.latitude, event.longitude);
-      });*/
-      /*LocationProvider.getLocation(toUse: (position) {
-        userLocation = LatLng(position.latitude, position.longitude);
-      });*/
       toChange = await getNearestTransport(userLocation);
       await Firebase.initializeApp();
       //Setto i listener:

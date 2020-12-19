@@ -177,7 +177,7 @@ class _StationScreenState extends State<StationScreen>
             Text("PRICE: ${value.toString().toUpperCase()}€",
                 style: TextStyle(fontSize: 24.0)),
             key.toString().toLowerCase() == 'singleuse'
-                ? Text("Single use ticket")
+                ? Text("Single use ticket", style: TextStyle(fontSize: 24.0))
                 : FlatButton.icon(
                     label: Text(
                         'Chose a start Date\n${chosenDate.day.toString()}/${chosenDate.month.toString()}/${chosenDate.year.toString()}',
@@ -202,8 +202,8 @@ class _StationScreenState extends State<StationScreen>
                             return AlertDialog(
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(15.0)),
-                                title:
-                                    Text('Add a Payment Card to buy a ticket'),
+                                title: Text(
+                                    'Add a payments card and your birth date to buy a ticket'),
                                 content: FlatButton.icon(
                                     onPressed: () => Navigator.pushNamed(
                                         context, '/account'),

@@ -93,7 +93,10 @@ class _TicketScreenState extends State<TicketScreen> {
                                               3,
                                       child: Center(
                                         child: QrImage(
-                                            data: ticket.toCode(), size: 500),
+                                            data: ticket.toCode(),
+                                            size: 500,
+                                            embeddedImage: AssetImage(
+                                                'assets/images/icon.png')),
                                       ),
                                     ));
                                   });
@@ -167,4 +170,5 @@ Future<String> downloadPdf(Ticket t) async {
     print('ERROR: ${error.toString()}');
     return null;
   }
+  return null;
 }
