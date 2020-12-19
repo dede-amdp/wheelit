@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:wheelit/classes/Transport.dart';
 import 'package:meta/meta.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class DatabaseManager {
   static Future<Map<String, Map>> getUsersList() async {
@@ -333,6 +334,15 @@ class DatabaseManager {
     }, SetOptions(merge: true));
   }
 
+  static Future<void> setGoogleUser(
+      String email, String userName) async {
+    await Firebase.initializeApp();
+    final firestoreInstance = FirebaseFirestore.instance;
+    firestoreInstance.collection("users").doc(email).set({
+      "userName": userName,
+    }, SetOptions(merge: true));
+  }
+
   static Future<void> setPaymentCard(
       String email, String cvc, String carCode, String expirationDate) async {
     await Firebase.initializeApp();
@@ -362,4 +372,11 @@ class DatabaseManager {
       });
     });
   }
+
+  static Future<void> updatePassword(String password) async {
+    await Firebase.initializeApp();
+    User user = FirebaseAuth.instance.currentUser;
+    user.updatePassword(password);
+  }
 }
+
