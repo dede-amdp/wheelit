@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:wheelit/classes/LocationProvider.dart';
 import 'package:wheelit/classes/Ticket.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -10,6 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class DatabaseManager {
+
   static Future<Map<String, Map>> getUsersList() async {
     Map<String, Map> users = {};
     await Firebase.initializeApp();
@@ -344,7 +346,7 @@ class DatabaseManager {
       {
         "owner": email,
         "cvc": cvc,
-        "cardcode": carCode,
+        "cardCode": carCode,
         "expireDate": expirationDate,
       },
     );
@@ -369,7 +371,49 @@ class DatabaseManager {
   static Future<void> updatePassword(String password) async {
     await Firebase.initializeApp();
     User user = FirebaseAuth.instance.currentUser;
-    user.updatePassword(password);
+    try {
+      user.updatePassword(password).then((value) =>
+          Text("Successful changed password"));
+    }catch(error){
+      print("ERROR: ${error.toString()}");
+    }
+  }
+
+  static Future<void> updateCardCode(String cardCode, String cvc, String expireDate) async {
+    await Firebase.initializeApp();
+    User user = FirebaseAuth.instance.currentUser;
+    CollectionReference cardCodeCollection =
+    FirebaseFirestore.instance.collection('paymentCards');
+    try {
+      await cardCodeCollection
+          .where('owner', isEqualTo: user.email)
+          .get()
+          .then((snapshot) {
+        snapshot.docs.forEach((document) {
+          cardCodeCollection.doc(document.id).update({'cardCode': cardCode});
+          cardCodeCollection.doc(document.id).update({'cvc': cvc});
+          cardCodeCollection.doc(document.id).update({'expireDate': expireDate});
+        });
+      });
+    } catch(error){
+      print("ERROR: ${error.toString()}");
+    }
+  }
+
+  static Future<void> updateName(String userName) async {
+    await Firebase.initializeApp();
+    User user = FirebaseAuth.instance.currentUser;
+    CollectionReference userCollection =
+    FirebaseFirestore.instance.collection('users');
+    try {
+      await userCollection
+          .doc(user.email)
+          .get()
+          .then((snapshot) {
+        userCollection.doc(user.email).update({'userName': userName});
+      });
+    } catch(error) {
+      print("ERROR: ${error.toString()}");
+    }
   }
 }
-
