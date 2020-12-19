@@ -20,6 +20,6 @@ Future<User> signInWithGoogle() async {
   assert(await user.getIdToken() != null);
   final User currentuser = _auth.currentUser;
   assert(currentuser.uid == user.uid);
-  DatabaseManager.setUser(user.email, null, user.displayName);
+  DatabaseManager.setGoogleUser(user.email, user.displayName);
   return user;
 }
