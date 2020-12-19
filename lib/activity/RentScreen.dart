@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:wheelit/classes/DatabaseManager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-//ignore
+//ignore:must_be_immutable
 class RentScreen extends StatefulWidget {
   String codeMezzo;
   bool fromDrawer;
@@ -68,13 +68,14 @@ class _RentScreenState extends State<RentScreen> {
                   ));
   }
 
-  void setUp() async {
+  Future<void> setUp() async {
+    this.isRented = true;
     String idMezzo = widget.codeMezzo;
     if (!widget.fromDrawer) {
       //Scannerizza il qr
       if (await DatabaseManager.isRented(idMezzo)) {
         setState(() {
-          print("FUCK THIS SHIT IM OUT");
+          print("AAAAAAAAA FUCK THIS SHIT IM OUT");
           if (mounted) {
             this.isRented = true;
             this.elevation = 0;
@@ -86,7 +87,6 @@ class _RentScreenState extends State<RentScreen> {
           if (mounted) this.isAlreadyRented = !isSameUser;
         });
       } else {
-        print('AAAAAAAAAAAAAAAAAAAAAAA');
         setState(() {
           if (mounted) {
             this.isAlreadyRented = false;
@@ -107,13 +107,15 @@ class _RentScreenState extends State<RentScreen> {
   }
 
   void rent() async {
-    if (await DatabaseManager.isRented(widget.codeMezzo)) {
+    if (!(await DatabaseManager.isRented(widget.codeMezzo))) {
       //se non è affittato
       await DatabaseManager.setStartRent(
           userEmail: this.user.email, transportCode: widget.codeMezzo);
       setState(() {
-        this.elevation = 0;
-        this.isRented = true;
+        if (mounted) {
+          this.elevation = 0;
+          this.isRented = true;
+        }
       });
     } else {
       await DatabaseManager.setEndRent(user.email, widget.codeMezzo);

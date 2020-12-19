@@ -11,7 +11,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class DatabaseManager {
-
   static Future<Map<String, Map>> getUsersList() async {
     Map<String, Map> users = {};
     await Firebase.initializeApp();
@@ -363,7 +362,6 @@ class DatabaseManager {
       String email, String cvc, String carCode, String expirationDate) async {
     await Firebase.initializeApp();
     final firestoreInstance = FirebaseFirestore.instance;
-<<<<<<< HEAD
     try {
       firestoreInstance.collection("paymentCards").add(
         {
@@ -376,16 +374,6 @@ class DatabaseManager {
     } catch (error) {
       print('ERROR ${error.toString()}');
     }
-=======
-    firestoreInstance.collection("paymentCards").add(
-      {
-        "owner": email,
-        "cvc": cvc,
-        "cardCode": carCode,
-        "expireDate": expirationDate,
-      },
-    );
->>>>>>> ad397b679469bdef7085eeab508b60a2446d8027
   }
 
   static Future<void> updateTickets(String email) async {
@@ -412,18 +400,20 @@ class DatabaseManager {
     await Firebase.initializeApp();
     User user = FirebaseAuth.instance.currentUser;
     try {
-      user.updatePassword(password).then((value) =>
-          Text("Successful changed password"));
-    }catch(error){
+      user
+          .updatePassword(password)
+          .then((value) => Text("Successful changed password"));
+    } catch (error) {
       print("ERROR: ${error.toString()}");
     }
   }
 
-  static Future<void> updateCardCode(String cardCode, String cvc, String expireDate) async {
+  static Future<void> updateCardCode(
+      String cardCode, String cvc, String expireDate) async {
     await Firebase.initializeApp();
     User user = FirebaseAuth.instance.currentUser;
     CollectionReference cardCodeCollection =
-    FirebaseFirestore.instance.collection('paymentCards');
+        FirebaseFirestore.instance.collection('paymentCards');
     try {
       await cardCodeCollection
           .where('owner', isEqualTo: user.email)
@@ -432,15 +422,16 @@ class DatabaseManager {
         snapshot.docs.forEach((document) {
           cardCodeCollection.doc(document.id).update({'cardCode': cardCode});
           cardCodeCollection.doc(document.id).update({'cvc': cvc});
-          cardCodeCollection.doc(document.id).update({'expireDate': expireDate});
+          cardCodeCollection
+              .doc(document.id)
+              .update({'expireDate': expireDate});
         });
       });
-    } catch(error){
+    } catch (error) {
       print("ERROR: ${error.toString()}");
     }
   }
 
-<<<<<<< HEAD
   static Future<void> getRented(String userEmail,
       {Function onChanged, Map toChange}) async {
     toChange = {};
@@ -502,17 +493,19 @@ class DatabaseManager {
         FirebaseFirestore.instance.collection('rented');
     try {
       await rentRef.where('electric', isEqualTo: code).get().then((docs) {
-        if (docs == null)
+        if (docs == null) {
           return false;
-        else {
+        } else {
           docs.docs.forEach((document) {
             if (document.data()['endRent'] == null) return true;
+            print("aewrkhbferjhbfaejhbrfjherf");
           });
           return false;
         }
       });
     } catch (error) {
       print('ERROR ${error.toString()}');
+      return false;
     }
     return false;
   }
@@ -531,6 +524,7 @@ class DatabaseManager {
       });
     } catch (error) {
       print('ERROR ${error.toString()}');
+      return false;
     }
     return false;
   }
@@ -554,23 +548,18 @@ class DatabaseManager {
       print('ERROR ${error.toString()}');
     }
   }
-}
-=======
+
   static Future<void> updateName(String userName) async {
     await Firebase.initializeApp();
     User user = FirebaseAuth.instance.currentUser;
     CollectionReference userCollection =
-    FirebaseFirestore.instance.collection('users');
+        FirebaseFirestore.instance.collection('users');
     try {
-      await userCollection
-          .doc(user.email)
-          .get()
-          .then((snapshot) {
+      await userCollection.doc(user.email).get().then((snapshot) {
         userCollection.doc(user.email).update({'userName': userName});
       });
-    } catch(error) {
+    } catch (error) {
       print("ERROR: ${error.toString()}");
     }
   }
 }
->>>>>>> ad397b679469bdef7085eeab508b60a2446d8027
