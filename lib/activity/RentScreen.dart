@@ -86,6 +86,7 @@ class _RentScreenState extends State<RentScreen> {
           if (mounted) this.isAlreadyRented = !isSameUser;
         });
       } else {
+        print('AAAAAAAAAAAAAAAAAAAAAAA');
         setState(() {
           if (mounted) {
             this.isAlreadyRented = false;
