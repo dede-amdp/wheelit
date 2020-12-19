@@ -498,7 +498,6 @@ class DatabaseManager {
         } else {
           docs.docs.forEach((document) {
             if (document.data()['endRent'] == null) return true;
-            print("aewrkhbferjhbfaejhbrfjherf");
           });
           return false;
         }
