@@ -9,13 +9,11 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
-  Map userData; //se è null l'utente non è loggato -> inseriamo il db?
+  Map userData;
   String userEmail;
 
   @override
   void initState() {
-    //accedi al db interno userEmail = db.get('email');
-    if (userData == null) logIn();
     getData(userEmail);
     super.initState();
   }
@@ -86,13 +84,5 @@ class _AccountScreenState extends State<AccountScreen> {
     } else {
       print("NO DATA");
     }
-  }
-
-  void logIn() {
-    //ESEGUI IL LOG IN CON GOOGLE AUTH, PER ORA INIZIALIZZA userData
-    //il log in fatto con google (e apple?) salva la mail dell'utente nel dispositivo
-    //e poi assegnamo il valore a userData :)
-    //simula un log in
-    userEmail = 'pippolippo@gmail.com';
   }
 }

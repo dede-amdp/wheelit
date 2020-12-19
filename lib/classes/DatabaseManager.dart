@@ -63,6 +63,7 @@ class DatabaseManager {
           FirebaseFirestore.instance.collection('tickets');
       await ticketsCollection
           .where('user', isEqualTo: userEmail)
+          .where('used', isEqualTo: false)
           .orderBy('buyTimeStamp',
               descending: true) //SE NON FUNZIONA: TOGLIERE DESCENDING
           .get()

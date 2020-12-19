@@ -11,6 +11,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 class TicketScreen extends StatefulWidget {
   @override
   _TicketScreenState createState() => _TicketScreenState();
+  //TODO: AGGIUNGERE FILTRO PER USED
 
   //Metodo usato per convertire DateTime in data e ora comprensibili da un utente
   static List toLocalDateTime(DateTime dt) {
@@ -125,7 +126,7 @@ Future<String> downloadPdf(Ticket t) async {
         data: t.toCode(),
         version: QrVersions.auto,
       );
-      double imageSize = 300;
+      double imageSize = 400;
       final imageByteData = await imagePainter.toImageData(imageSize);
       final imageuintlist = imageByteData.buffer.asUint8List();
       PdfDocument doc = PdfDocument();

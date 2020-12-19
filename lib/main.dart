@@ -26,6 +26,6 @@ void main() async {
       '/reset': (context) => ForgotPasswordScreen(),
       '/rent': (context) => RentScreen(),
     },
-    initialRoute: '/rent',
+    initialRoute: '/welcome',
   ));
 }
