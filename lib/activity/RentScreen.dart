@@ -30,7 +30,7 @@ class _RentScreenState extends State<RentScreen> {
         appBar: AppBar(
             backgroundColor: Theme.of(context).accentColor, elevation: 0),
         backgroundColor: Theme.of(context).accentColor,
-        body: isAlreadyRented == null
+        body: isAlreadyRented == null || isRented == null
             ? Center(
                 child: CircularProgressIndicator(
                 backgroundColor: Colors.black,
@@ -75,7 +75,6 @@ class _RentScreenState extends State<RentScreen> {
       //Scannerizza il qr
       if (await DatabaseManager.isRented(idMezzo)) {
         setState(() {
-          print("AAAAAAAAA FUCK THIS SHIT IM OUT");
           if (mounted) {
             this.isRented = true;
             this.elevation = 0;

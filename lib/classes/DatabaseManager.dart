@@ -23,7 +23,7 @@ class DatabaseManager {
         });
       });
     } catch (error) {
-      print(error.toString());
+      print('ERROE: ${error.toString()}');
       users = null;
     }
     return users;
@@ -77,7 +77,7 @@ class DatabaseManager {
         }
       });
     } catch (error) {
-      print('ERROR ${error.toString()}');
+      print('ERROR: ${error.toString()}');
       data = null;
     }
     return data;
@@ -111,7 +111,7 @@ class DatabaseManager {
         });
       }
     } catch (error) {
-      print(error.toString());
+      print('ERROR: ${error.toString()}');
     }
   }
 
@@ -142,7 +142,7 @@ class DatabaseManager {
         });
       }
     } catch (error) {
-      print(error.toString());
+      print('ERROR: ${error.toString()}');
       return null;
     }
     return data;
@@ -186,7 +186,7 @@ class DatabaseManager {
         }
       });
     } catch (error) {
-      print(error.toString());
+      print('ERROR: ${error.toString()}');
       return null;
     }
     if (transportType != null) {
@@ -257,7 +257,7 @@ class DatabaseManager {
           });
         });
       } catch (error) {
-        print(error.toString());
+        print('ERROR: ${error.toString()}');
       }
     }
   }
@@ -455,7 +455,7 @@ class DatabaseManager {
         }
       });
     } catch (error) {
-      print('ERROR ${error.toString()}');
+      print('ERROR: ${error.toString()}');
     }
   }
 
@@ -483,7 +483,7 @@ class DatabaseManager {
         }
       });
     } catch (error) {
-      print('ERROR ${error.toString()}');
+      print('ERROR: ${error.toString()}');
     }
   }
 
@@ -492,47 +492,58 @@ class DatabaseManager {
     CollectionReference rentRef =
         FirebaseFirestore.instance.collection('rented');
     try {
-      await rentRef.where('electric', isEqualTo: code).get().then((docs) {
-        if (docs == null) {
+      bool result = false;
+      await rentRef.where('electric', isEqualTo: code).get().then((documents) {
+        if (documents == null) {
           return false;
         } else {
-          docs.docs.forEach((document) {
-            if (document.data()['endRent'] == null) return true;
+          documents.docs.forEach((document) {
+            if (!document.data().containsKey('endRent')) {
+              result = true;
+            }
           });
-          return false;
         }
       });
+      return result;
     } catch (error) {
-      print('ERROR ${error.toString()}');
+      print('ERROR: ${error.toString()}');
       return false;
     }
-    return false;
   }
 
   static Future<bool> isSameUser(String email, String code) async {
     await Firebase.initializeApp();
     CollectionReference rentRef =
         FirebaseFirestore.instance.collection('rented');
+    bool result = false;
     try {
       await rentRef.where('electric', isEqualTo: code).get().then((docs) {
         docs.docs.forEach((document) {
-          if (document.data()['endRent'] == null) {
-            return document.data()['user'] == email;
+          if (!document.data().containsKey('endRent') && !result) {
+            result = document.data()['user'] == email;
           }
         });
       });
+      return result;
     } catch (error) {
-      print('ERROR ${error.toString()}');
+      print('ERROR: ${error.toString()}');
       return false;
     }
-    return false;
   }
 
   static Future<void> setEndRent(String userEmail, String code) async {
     await Firebase.initializeApp();
     CollectionReference rentRef =
         FirebaseFirestore.instance.collection('rented');
+    CollectionReference electricCollection =
+        FirebaseFirestore.instance.collection('electric');
+    double price = 0;
     try {
+      await electricCollection.doc(code).get().then((document) {
+        if (document != null) {
+          price = document.data()['price'];
+        }
+      });
       await rentRef
           .where('user', isEqualTo: userEmail)
           .where('electric', isEqualTo: code)
@@ -540,11 +551,18 @@ class DatabaseManager {
           .get()
           .then((document) {
         if (document != null) {
-          rentRef.doc(document.docs[0].id).update({'endRent': DateTime.now()});
+          Timestamp startRent = document.docs[0].data()['startRent'];
+          DateTime endRent = DateTime.now();
+          int rentTimeinMinutes =
+              endRent.difference(startRent.toDate()).inMinutes;
+          double cost = price * rentTimeinMinutes;
+          rentRef
+              .doc(document.docs[0].id)
+              .update({'endRent': endRent, 'totalCost': cost});
         }
       });
     } catch (error) {
-      print('ERROR ${error.toString()}');
+      print('ERROR: ${error.toString()}');
     }
   }
 
