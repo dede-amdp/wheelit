@@ -579,4 +579,27 @@ class DatabaseManager {
       print("ERROR: ${error.toString()}");
     }
   }
+
+  static Future<void> deleteUserData(String userEmail) {
+    Firebase.initializeApp();
+    CollectionReference usersCollection =
+        FirebaseFirestore.instance.collection('users');
+    CollectionReference paymentCardCollection =
+        FirebaseFirestore.instance.collection('paymentCards');
+    try {
+      usersCollection.doc(userEmail).delete();
+      paymentCardCollection
+          .where('owner', isEqualTo: userEmail)
+          .get()
+          .then((value) {
+        if (value != null) {
+          value.docs.forEach((paymentCard) {
+            paymentCardCollection.doc(paymentCard.id).delete();
+          });
+        }
+      });
+    } catch (error) {
+      print('ERROR: ${error.toString()}');
+    }
+  }
 }
