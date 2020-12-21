@@ -396,42 +396,6 @@ class DatabaseManager {
     }
   }
 
-  static Future<void> updatePassword(String password) async {
-    await Firebase.initializeApp();
-    User user = FirebaseAuth.instance.currentUser;
-    try {
-      user
-          .updatePassword(password)
-          .then((value) => Text("Successful changed password"));
-    } catch (error) {
-      print("ERROR: ${error.toString()}");
-    }
-  }
-
-  static Future<void> updateCardCode(
-      String cardCode, String cvc, String expireDate) async {
-    await Firebase.initializeApp();
-    User user = FirebaseAuth.instance.currentUser;
-    CollectionReference cardCodeCollection =
-        FirebaseFirestore.instance.collection('paymentCards');
-    try {
-      await cardCodeCollection
-          .where('owner', isEqualTo: user.email)
-          .get()
-          .then((snapshot) {
-        snapshot.docs.forEach((document) {
-          cardCodeCollection.doc(document.id).update({'cardCode': cardCode});
-          cardCodeCollection.doc(document.id).update({'cvc': cvc});
-          cardCodeCollection
-              .doc(document.id)
-              .update({'expireDate': expireDate});
-        });
-      });
-    } catch (error) {
-      print("ERROR: ${error.toString()}");
-    }
-  }
-
   static Future<void> getRented(String userEmail,
       {Function onChanged, Map toChange}) async {
     toChange = {};
@@ -574,6 +538,56 @@ class DatabaseManager {
     try {
       await userCollection.doc(user.email).get().then((snapshot) {
         userCollection.doc(user.email).update({'userName': userName});
+      });
+    } catch (error) {
+      print("ERROR: ${error.toString()}");
+    }
+  }
+
+  static Future<void> updateBirthDate(DateTime birthDate) async {
+    await Firebase.initializeApp();
+    User user = FirebaseAuth.instance.currentUser;
+    CollectionReference userCollection =
+    FirebaseFirestore.instance.collection('users');
+    try {
+      await userCollection.doc(user.email).get().then((snapshot) {
+        userCollection.doc(user.email).update({'birthDate': birthDate});
+      });
+    } catch (error) {
+      print("ERROR: ${error.toString()}");
+    }
+  }
+
+  static Future<void> updatePassword(String password) async {
+    await Firebase.initializeApp();
+    User user = FirebaseAuth.instance.currentUser;
+    try {
+      user
+          .updatePassword(password)
+          .then((value) => Text("Successful changed password"));
+    } catch (error) {
+      print("ERROR: ${error.toString()}");
+    }
+  }
+
+  static Future<void> updateCardCode(
+      String cardCode, String cvc, String expireDate) async {
+    await Firebase.initializeApp();
+    User user = FirebaseAuth.instance.currentUser;
+    CollectionReference cardCodeCollection =
+    FirebaseFirestore.instance.collection('paymentCards');
+    try {
+      await cardCodeCollection
+          .where('owner', isEqualTo: user.email)
+          .get()
+          .then((snapshot) {
+        snapshot.docs.forEach((document) {
+          cardCodeCollection.doc(document.id).update({'cardCode': cardCode});
+          cardCodeCollection.doc(document.id).update({'cvc': cvc});
+          cardCodeCollection
+              .doc(document.id)
+              .update({'expireDate': expireDate});
+        });
       });
     } catch (error) {
       print("ERROR: ${error.toString()}");
