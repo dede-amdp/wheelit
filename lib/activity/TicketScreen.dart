@@ -92,10 +92,9 @@ class _TicketScreenState extends State<TicketScreen> {
                                               3,
                                       child: Center(
                                         child: QrImage(
-                                            data: ticket.toCode(),
-                                            size: 500,
-                                            embeddedImage: AssetImage(
-                                                'assets/images/icon.png')),
+                                          data: ticket.toCode(),
+                                          size: 500,
+                                        ),
                                       ),
                                     ));
                                   });
