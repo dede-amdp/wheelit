@@ -72,7 +72,8 @@ class _AccountScreenState extends State<AccountScreen> {
                         },
                         decoration: InputDecoration(
                             labelText: 'User name',
-                            prefixIcon: Icon(Icons.account_box_rounded)),
+                            prefixIcon: Icon(Icons.account_box_rounded,
+                                color: Theme.of(context).accentColor)),
                         controller: userNameController,
                         style: TextStyle(color: Theme.of(context).accentColor),
                       ),
@@ -84,7 +85,8 @@ class _AccountScreenState extends State<AccountScreen> {
                         },
                         decoration: InputDecoration(
                             labelText: 'Password',
-                            prefixIcon: Icon(Icons.lock)),
+                            prefixIcon: Icon(Icons.lock,
+                                color: Theme.of(context).accentColor)),
                         obscureText: true,
                         controller: passwordController,
                         style: TextStyle(color: Theme.of(context).accentColor),
@@ -104,7 +106,8 @@ class _AccountScreenState extends State<AccountScreen> {
                             }
                           });
                         },
-                        leading: Icon(Icons.calendar_today),
+                        leading: Icon(Icons.calendar_today,
+                            color: Theme.of(context).accentColor),
                         title: Text(
                             'Birth date: ' + birthDate.toString().split(' ')[0],
                             style: TextStyle(
@@ -122,7 +125,8 @@ class _AccountScreenState extends State<AccountScreen> {
                         },
                         decoration: InputDecoration(
                             labelText: 'Card Code',
-                            prefixIcon: Icon(Icons.credit_card_rounded)),
+                            prefixIcon: Icon(Icons.credit_card_rounded,
+                                color: Theme.of(context).accentColor)),
                         controller: cardCodeController,
                         style: TextStyle(color: Theme.of(context).accentColor),
                       ),
@@ -135,7 +139,9 @@ class _AccountScreenState extends State<AccountScreen> {
                           }
                         },
                         decoration: InputDecoration(
-                            labelText: 'CVC/CVV', prefixIcon: Icon(Icons.lock)),
+                            labelText: 'CVC/CVV',
+                            prefixIcon: Icon(Icons.lock,
+                                color: Theme.of(context).accentColor)),
                         controller: cvvController,
                         style: TextStyle(color: Theme.of(context).accentColor),
                       ),
@@ -163,7 +169,8 @@ class _AccountScreenState extends State<AccountScreen> {
                         },
                         decoration: InputDecoration(
                             labelText: 'Expiration Date',
-                            prefixIcon: Icon(Icons.calendar_today)),
+                            prefixIcon: Icon(Icons.calendar_today,
+                                color: Theme.of(context).accentColor)),
                         controller: expirationController,
                         style: TextStyle(color: Theme.of(context).accentColor),
                       ),
