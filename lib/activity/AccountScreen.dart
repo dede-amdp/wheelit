@@ -257,7 +257,7 @@ class _AccountScreenState extends State<AccountScreen> {
         this.userNameController.text =
             (userData['userName'] != null ? userData['userName'] : '');
         if (userData['paymentCard'] != null) {
-          this.cvvController.value = userData['paymentCard']['cvc'] != null
+          this.cvvController.text = userData['paymentCard']['cvc'] != null
               ? userData['paymentCard']['cvc']
               : '';
           this.cardCodeController.text =
