@@ -48,9 +48,10 @@ class _AccountScreenState extends State<AccountScreen> {
               : Form(
                   key: _formKey,
                   child: ListView(
+                    padding: EdgeInsets.all(16.0),
                     children: [
                       Center(
-                          child: Text(user.displayName,
+                          child: Text(userData['userName'],
                               style: TextStyle(
                                   fontSize: 48.0,
                                   color: Theme.of(context).accentColor))),
@@ -104,15 +105,17 @@ class _AccountScreenState extends State<AccountScreen> {
                           });
                         },
                         leading: Icon(Icons.calendar_today),
-                        title: Text('Birth date: ' +
-                            birthDate.toString().split(' ')[0]),
+                        title: Text(
+                            'Birth date: ' + birthDate.toString().split(' ')[0],
+                            style: TextStyle(
+                                color: Theme.of(context).accentColor)),
                       ),
                       Divider(color: Colors.grey[850], height: 8),
                       TextFormField(
                         // ignore: missing_return
                         validator: (input) {
                           bool validCardCode =
-                              RegExp(r'^[1-9]').hasMatch(input);
+                              RegExp(r'^[0-9]').hasMatch(input);
                           if (input.length != 16 || !validCardCode) {
                             return '  Invalid code';
                           }
@@ -126,7 +129,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       TextFormField(
                         //ignore:missing_return
                         validator: (input) {
-                          bool validCvc = RegExp(r'^[1-9]').hasMatch(input);
+                          bool validCvc = RegExp(r'^[0-9]').hasMatch(input);
                           if (input.length != 3 || !validCvc) {
                             return '  Invalid code';
                           }
@@ -142,7 +145,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           if (input.isNotEmpty || input.length == 5) {
                             bool valid1 = input.contains('/');
                             if (valid1) {
-                              bool valid2 = RegExp(r'^[1-9/]').hasMatch(input);
+                              bool valid2 = RegExp(r'^[0-9/]').hasMatch(input);
                               if (valid2) {
                                 String month = input.split('/')[0];
                                 bool valid3 = int.parse(month) <= 12 &&
@@ -212,7 +215,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                               onPressed: () {
                                                 DatabaseManager.deleteUserData(
                                                     userEmail);
-                                                Navigator.pushReplacementNamed(
+                                                Navigator.popAndPushNamed(
                                                     context, '/welcome');
                                               }),
                                         ]),
@@ -234,7 +237,19 @@ class _AccountScreenState extends State<AccountScreen> {
                             borderRadius: BorderRadius.circular(20.0),
                           ),
                         ),
-                      )
+                      ),
+                      FlatButton.icon(
+                          onPressed: () => showDialog(
+                              context: context,
+                              builder: (context) {
+                                return showRentingTutorial(context);
+                              }),
+                          icon: Icon(Icons.help_outline_outlined,
+                              color: Theme.of(context).accentColor),
+                          label: Text('Help',
+                              style: TextStyle(
+                                  color: Theme.of(context).accentColor,
+                                  fontSize: 24)))
                     ],
                   ),
                 ),
@@ -265,7 +280,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   ? userData['paymentCard']['cardCode']
                   : '';
           this.expirationController.text =
-              userData['paymentCard']['cardCode'] != null
+              userData['paymentCard']['expireDate'] != null
                   ? userData['paymentCard']['expireDate']
                   : '';
         }
@@ -302,5 +317,85 @@ class _AccountScreenState extends State<AccountScreen> {
                 )
               ]));
         });
+  }
+
+  Widget showRentingTutorial(BuildContext context) {
+    return AlertDialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+        title: Text('Renting'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Text('1. Tap the '),
+              Icon(Icons.qr_code_scanner_rounded),
+              Text(' button')
+            ]),
+            Text('2. Scan the QR code on the vehicle'),
+            Row(children: [
+              Text('3. Tap the '),
+              Icon(Icons.power_settings_new_rounded),
+              Text(' button to rent')
+            ]),
+            Row(children: [
+              Text('4. Tap the '),
+              Icon(Icons.power_settings_new_rounded),
+              Text(' button again to stop')
+            ])
+          ],
+        ),
+        actions: [
+          FlatButton(
+            onPressed: () {
+              Navigator.pop(context);
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return showBuyingTutorial(context);
+                  });
+            },
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Text('Next',
+                  style: TextStyle(
+                      color: Theme.of(context).accentColor, fontSize: 24)),
+              Icon(Icons.arrow_forward_ios,
+                  color: Theme.of(context).accentColor)
+            ]),
+          )
+        ]);
+  }
+
+  Widget showBuyingTutorial(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+      title: Text('Buying tickets'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('1. Tap a station on the map '),
+          Text('2. Tap a bus or a train line'),
+          Text('3. Tap on the ticket type that you want to buy'),
+          Row(children: [
+            Text('4. Tap the '),
+            Icon(Icons.check),
+            Text(' button to buy the chosen ticket')
+          ])
+        ],
+      ),
+      actions: [
+        FlatButton(
+          onPressed: () => Navigator.pop(context),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Text('End',
+                style: TextStyle(
+                    color: Theme.of(context).accentColor, fontSize: 24)),
+            Icon(Icons.check_circle, color: Theme.of(context).accentColor)
+          ]),
+        )
+      ],
+    );
   }
 }

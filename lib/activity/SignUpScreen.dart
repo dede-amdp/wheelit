@@ -169,7 +169,7 @@ class _SignUpState extends State<SignUpScreen> {
                               //ignore:missing_return
                               validator: (input) {
                                 bool validCvc =
-                                    RegExp(r'^[1-9]').hasMatch(input);
+                                    RegExp(r'^[0-9]').hasMatch(input);
                                 if (input.length != 3 || !validCvc) {
                                   return '  Invalid code';
                                 }
@@ -187,7 +187,7 @@ class _SignUpState extends State<SignUpScreen> {
                                   bool valid1 = input.contains('/');
                                   if (valid1) {
                                     bool valid2 =
-                                        RegExp(r'^[1-9/]').hasMatch(input);
+                                        RegExp(r'^[0-9/]').hasMatch(input);
                                     if (valid2) {
                                       String month = input.split('/')[0];
                                       bool valid3 = int.parse(month) <= 12 &&
