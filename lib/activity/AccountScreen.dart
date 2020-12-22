@@ -148,11 +148,13 @@ class _AccountScreenState extends State<AccountScreen> {
                       TextFormField(
                         //ignore:missing_return
                         validator: (input) {
-                          if (input.isNotEmpty || input.length == 5) {
+                          if (input.isNotEmpty && input.length == 5) {
                             bool valid1 = input.contains('/');
                             if (valid1) {
                               bool valid2 = RegExp(r'^[0-9/]').hasMatch(input);
-                              if (valid2) {
+                              bool notvalid =
+                                  RegExp(r'^[A-Z a-z]').hasMatch(input);
+                              if (valid2 && !notvalid) {
                                 String month = input.split('/')[0];
                                 bool valid3 = int.parse(month) <= 12 &&
                                     int.parse(month) > 0;
