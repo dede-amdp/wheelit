@@ -488,3 +488,4 @@ class _SearchBarState extends State<SearchBar> {
     );
   }
 }
+//MADE BY ANGELO MAURO DE PINTO, DANIELE CORRADO E ELVISA KURTAJ
