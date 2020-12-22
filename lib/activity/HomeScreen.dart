@@ -300,45 +300,57 @@ class _HomeScreenState extends State<HomeScreen> {
   void floatingRent(String qr) async {
     if (qr != "" && qr != "-1") {
       Map infoMezzo = (await DatabaseManager.getTransportInfo(qr))[qr];
-      showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15.0)),
-              content: Container(
-                  child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                    Row(children: [
-                      Icon(infoMezzo['type'] == 'SCOOTER'
-                          ? Icons.electric_scooter
-                          : Icons.electric_bike),
-                      Text("\t${infoMezzo['type']}\t"),
-                    ]),
-                    Row(children: [
-                      Icon(Icons.battery_full, color: Colors.green),
-                      Text("\t${infoMezzo['battery']}%\t")
-                    ])
-                  ])),
-              title: Text('General Information:'),
-              actions: <Widget>[
-                MaterialButton(
-                  elevation: 5.0,
-                  child: Text("RENT"),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                RentScreen(codeMezzo: qr, fromDrawer: false)));
-                  },
-                )
-              ],
-            );
-          });
+      if (infoMezzo == null) {
+        showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0)),
+                content: Text('QR Code not recognised'),
+              );
+            });
+      } else {
+        showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0)),
+                content: Container(
+                    child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                      Row(children: [
+                        Icon(infoMezzo['type'] == 'SCOOTER'
+                            ? Icons.electric_scooter
+                            : Icons.electric_bike),
+                        Text("\t${infoMezzo['type']}\t"),
+                      ]),
+                      Row(children: [
+                        Icon(Icons.battery_full, color: Colors.green),
+                        Text("\t${infoMezzo['battery']}%\t")
+                      ])
+                    ])),
+                title: Text('General Information:'),
+                actions: <Widget>[
+                  MaterialButton(
+                    elevation: 5.0,
+                    child: Text("RENT"),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => RentScreen(
+                                  codeMezzo: qr, fromDrawer: false)));
+                    },
+                  )
+                ],
+              );
+            });
+      }
     }
   }
 
