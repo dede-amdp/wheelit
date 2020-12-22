@@ -44,13 +44,15 @@ class DatabaseManager {
           .where('owner', isEqualTo: '$userEmail')
           .get()
           .then((value) {
-        value.docs.forEach((element) {
-          data.addAll({'paymentCard': element.data()});
-        });
+        if (value != null) {
+          value.docs.forEach((element) {
+            data.addAll({'paymentCard': element.data()});
+          });
+        }
       });
     } catch (error) {
       print('ERROR: ${error.toString()}');
-      data = null;
+      return data;
     }
     return data;
   }
@@ -581,13 +583,21 @@ class DatabaseManager {
           .where('owner', isEqualTo: user.email)
           .get()
           .then((snapshot) {
-        snapshot.docs.forEach((document) {
-          cardCodeCollection.doc(document.id).update({'cardCode': cardCode});
-          cardCodeCollection.doc(document.id).update({'cvc': cvc});
-          cardCodeCollection
-              .doc(document.id)
-              .update({'expireDate': expireDate});
-        });
+        if (snapshot != null) {
+          if (snapshot.docs.length > 0) {
+            snapshot.docs.forEach((document) {
+              cardCodeCollection.doc(document.id).update(
+                  {'cardCode': cardCode, 'cvc': cvc, 'expireDate': expireDate});
+            });
+          } else {
+            cardCodeCollection.add({
+              'cardCode': cardCode,
+              'cvc': cvc,
+              'expireDate': expireDate,
+              'owner': user.email
+            });
+          }
+        }
       });
     } catch (error) {
       print("ERROR: ${error.toString()}");

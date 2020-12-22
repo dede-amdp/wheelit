@@ -242,6 +242,23 @@ class _StationScreenState extends State<StationScreen>
                                               .add(Duration(days: 15)))[0]
                                           .toString()
                                       : ''));
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15.0)),
+                                content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text('Ticket bought successfully'),
+                                      Icon(
+                                        Icons.check,
+                                        color: Colors.green,
+                                        size: 100,
+                                      )
+                                    ]));
+                          });
                     }
                     _scaffoldKey.currentState.showBodyScrim(false, 0.5);
                     _scaffoldKey.currentState.hideCurrentSnackBar();

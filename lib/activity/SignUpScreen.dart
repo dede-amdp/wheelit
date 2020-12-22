@@ -149,7 +149,9 @@ class _SignUpState extends State<SignUpScreen> {
                       child: TextFormField(
                           // ignore: missing_return
                           validator: (input) {
-                            if (input.length < 16 || input.length > 16) {
+                            bool validCardCode =
+                                RegExp(r'^[1-9]').hasMatch(input);
+                            if (input.length != 16 || !validCardCode) {
                               return '  Invalid code';
                             }
                           },
@@ -164,11 +166,12 @@ class _SignUpState extends State<SignUpScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           TextFormField(
+                              //ignore:missing_return
                               validator: (input) {
-                                if (input.length < 3 || input.length > 3) {
+                                bool validCvc =
+                                    RegExp(r'^[1-9]').hasMatch(input);
+                                if (input.length != 3 || !validCvc) {
                                   return '  Invalid code';
-                                } else {
-                                  return null;
                                 }
                               },
                               decoration: InputDecoration(
@@ -178,11 +181,26 @@ class _SignUpState extends State<SignUpScreen> {
                               obscureText: true,
                               onSaved: (input) => cvc = input),
                           TextFormField(
+                              //ignore:missing_return
                               validator: (input) {
-                                if (input.length < 5 || input.length > 5) {
-                                  return '  Invalid date';
+                                if (input.isNotEmpty || input.length == 5) {
+                                  bool valid1 = input.contains('/');
+                                  if (valid1) {
+                                    bool valid2 =
+                                        RegExp(r'^[1-9/]').hasMatch(input);
+                                    if (valid2) {
+                                      String month = input.split('/')[0];
+                                      bool valid3 = int.parse(month) <= 12 &&
+                                          int.parse(month) > 0;
+                                      if (!valid3) return '\tInvalid month';
+                                    } else {
+                                      return 'it must contains only numbers and /';
+                                    }
+                                  } else {
+                                    return '\tInsert a valid expiration date';
+                                  }
                                 } else {
-                                  return null;
+                                  return '\tInsert a valid expiration date';
                                 }
                               },
                               decoration: InputDecoration(
