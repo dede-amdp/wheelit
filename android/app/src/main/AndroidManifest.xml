@@ -9,7 +9,7 @@
 
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="wheelit"
+        android:label="Wheelit"
         android:icon="@mipmap/launcher_icon">
         android:requestLegacyExternalStroage="true"
         <activity
