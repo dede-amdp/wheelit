@@ -548,7 +548,7 @@ class DatabaseManager {
     await Firebase.initializeApp();
     User user = FirebaseAuth.instance.currentUser;
     CollectionReference userCollection =
-    FirebaseFirestore.instance.collection('users');
+        FirebaseFirestore.instance.collection('users');
     try {
       await userCollection.doc(user.email).get().then((snapshot) {
         userCollection.doc(user.email).update({'birthDate': birthDate});
@@ -575,7 +575,7 @@ class DatabaseManager {
     await Firebase.initializeApp();
     User user = FirebaseAuth.instance.currentUser;
     CollectionReference cardCodeCollection =
-    FirebaseFirestore.instance.collection('paymentCards');
+        FirebaseFirestore.instance.collection('paymentCards');
     try {
       await cardCodeCollection
           .where('owner', isEqualTo: user.email)
@@ -594,26 +594,72 @@ class DatabaseManager {
     }
   }
 
-  static Future<void> deleteUserData(String userEmail) {
+  static Future<bool> deleteUserData(String userEmail) async {
     Firebase.initializeApp();
     CollectionReference usersCollection =
         FirebaseFirestore.instance.collection('users');
     CollectionReference paymentCardCollection =
         FirebaseFirestore.instance.collection('paymentCards');
+    CollectionReference ticketsCollection =
+        FirebaseFirestore.instance.collection('tickets');
+    if (!(await hasRented(userEmail))) {
+      try {
+        usersCollection.doc(userEmail).delete(); //cancella dati utente
+        paymentCardCollection
+            .where('owner', isEqualTo: userEmail)
+            .get()
+            .then((value) {
+          if (value != null) {
+            value.docs.forEach((paymentCard) {
+              paymentCardCollection
+                  .doc(paymentCard.id)
+                  .delete(); //cancella la carta
+            });
+          }
+          ticketsCollection
+              .where('user', isEqualTo: userEmail)
+              .get()
+              .then((docs) {
+            if (docs != null) {
+              docs.docs.forEach((doc) {
+                ticketsCollection
+                    .doc(doc.id)
+                    .delete(); //cancello i biglietti dell'utente
+              });
+            }
+          });
+          FirebaseAuth.instance.currentUser.delete(); //cancella l'account
+          return true;
+        });
+      } catch (error) {
+        print('ERROR: ${error.toString()}');
+        return null;
+      }
+    }
+    return false;
+  }
+
+  static Future<bool> hasRented(String userEmail) async {
+    Firebase.initializeApp();
+    CollectionReference rentedCollection =
+        FirebaseFirestore.instance.collection('rented');
+    bool result = false;
     try {
-      usersCollection.doc(userEmail).delete();
-      paymentCardCollection
-          .where('owner', isEqualTo: userEmail)
+      rentedCollection
+          .where('user', isEqualTo: userEmail)
           .get()
-          .then((value) {
-        if (value != null) {
-          value.docs.forEach((paymentCard) {
-            paymentCardCollection.doc(paymentCard.id).delete();
+          .then((documents) {
+        if (documents == null)
+          result = false;
+        else {
+          documents.docs.forEach((document) {
+            if (!document.data().containsKey('endRent')) result = true;
           });
         }
       });
     } catch (error) {
-      print('ERROR: ${error.toString()}');
+      print("ERROR: ${error.toString()}");
     }
+    return result;
   }
 }
