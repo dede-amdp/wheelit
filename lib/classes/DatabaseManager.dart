@@ -352,9 +352,15 @@ class DatabaseManager {
     await Firebase.initializeApp();
     final firestoreInstance = FirebaseFirestore.instance;
     try {
-      firestoreInstance.collection("users").doc(email).set({
-        "userName": userName,
-      }, SetOptions(merge: true));
+      firestoreInstance.collection("users").doc(email).get().then((snapShot) =>
+      {
+        if(!snapShot.exists){
+          firestoreInstance.collection("users").doc(email).set({
+          "userName": userName,
+        },
+        SetOptions(merge: true))
+      }
+      });
     } catch (error) {
       print('ERROR ${error.toString()}');
     }
