@@ -109,7 +109,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         leading: Icon(Icons.calendar_today,
                             color: Theme.of(context).accentColor),
                         title: Text(
-                            'Birth date: ' + birthDate.toString().split(' ')[0],
+                            'Birth date: ${birthDate.day}/${birthDate.month}/${birthDate.year}',
                             style: TextStyle(
                                 color: Theme.of(context).accentColor)),
                       ),
@@ -390,7 +390,7 @@ class _AccountScreenState extends State<AccountScreen> {
           Row(children: [
             Text('4. Tap the '),
             Icon(Icons.check),
-            Text(' button to buy the chosen ticket')
+            Text(' button to buy the chosen ticket', softWrap: true)
           ])
         ],
       ),

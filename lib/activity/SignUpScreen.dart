@@ -18,6 +18,7 @@ class _SignUpState extends State<SignUpScreen> {
   String carCode;
   String cvc;
   String expirationDate;
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   void checkAuthentication() async {
     _auth.authStateChanges().listen((user) async {
@@ -40,10 +41,10 @@ class _SignUpState extends State<SignUpScreen> {
         await DatabaseManager.setPaymentCard(
             email, cvc, carCode, expirationDate);
         await DatabaseManager.setUser(email, birthDate, userName);
-
-        User user = (await _auth.createUserWithEmailAndPassword(
-                email: email, password: password))
-            .user;
+        User user = (await _auth.createUserWithEmailAndPassword(email: email, password: password)).user;
+        if(!user.emailVerified){
+          await user.sendEmailVerification();
+        }
         if (user != null) {
           await FirebaseAuth.instance.currentUser
               .updateProfile(displayName: user.displayName);
@@ -76,6 +77,7 @@ class _SignUpState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
         body: SingleChildScrollView(
       child: Container(
         child: Column(
@@ -213,6 +215,14 @@ class _SignUpState extends State<SignUpScreen> {
                         ],
                       ),
                     ),
+                    SizedBox(height: 20.0),
+                    RichText(
+                        text: TextSpan(
+                            text: "An account verification email will be sent to your email ",
+                            style: TextStyle(
+                              fontSize: 14.0,
+                              color: Colors.black,
+                            ))),
                     SizedBox(height: 10),
                     RaisedButton(
                       padding: EdgeInsets.fromLTRB(30, 10, 30, 10),
