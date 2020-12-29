@@ -19,6 +19,7 @@ class _RentScreenState extends State<RentScreen> {
   bool isProfileCompleted;
   bool isOfAge = true;
   User user = FirebaseAuth.instance.currentUser;
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -29,6 +30,7 @@ class _RentScreenState extends State<RentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        key: _scaffoldKey,
         appBar: AppBar(
             backgroundColor: Theme.of(context).accentColor, elevation: 0),
         backgroundColor: Theme.of(context).accentColor,
@@ -180,16 +182,27 @@ class _RentScreenState extends State<RentScreen> {
   }
 
   void rent() async {
+    Function showMessage = (String text) {
+      _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(text)));
+    };
+
     if (!(await DatabaseManager.isRented(widget.codeMezzo))) {
       //se non è affittato
-      await DatabaseManager.setStartRent(
-          userEmail: this.user.email, transportCode: widget.codeMezzo);
-      setState(() {
-        if (mounted) {
-          this.elevation = 0;
-          this.isRented = true;
-        }
-      });
+      if(user.emailVerified) {
+        await DatabaseManager.setStartRent(
+            userEmail: this.user.email, transportCode: widget.codeMezzo);
+        setState(() {
+          if (mounted) {
+            this.elevation = 0;
+            this.isRented = true;
+          }
+        });
+      }else{
+        print("errore email non verificata");
+        user.sendEmailVerification();
+        showMessage('A verification email was sent to the email ${user.email}');
+
+      }
     } else {
       await DatabaseManager.setEndRent(user.email, widget.codeMezzo);
       Navigator.pop(context);

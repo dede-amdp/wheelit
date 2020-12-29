@@ -2,6 +2,7 @@ import 'package:location/location.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class LocationProvider {
+
   static void getLocation({Function toUse}) async {
     await Location().requestPermission();
     Location().onLocationChanged().listen((location) {

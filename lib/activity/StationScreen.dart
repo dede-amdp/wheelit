@@ -101,9 +101,10 @@ class _StationScreenState extends State<StationScreen>
   }
 
   void buyTicket(String email, String line) async {
-    Map lineData = await DatabaseManager.getLineInfo(line);
-    Map userData = await DatabaseManager.getUserData(user.email);
-    buildSnackBar(userData, lineData);
+
+      Map lineData = await DatabaseManager.getLineInfo(line);
+      Map userData = await DatabaseManager.getUserData(user.email);
+      buildSnackBar(userData, lineData);
   }
 
   void buildSnackBar(Map userData, Map lineData,
@@ -165,6 +166,9 @@ class _StationScreenState extends State<StationScreen>
       DateTime chosenDate,
       int initialIndex = 0,
       TabController controller}) async {
+    Function showMessage = (String text) {
+      _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(text)));
+    };
     if (chosenDate == null) chosenDate = DateTime.now();
     List<Widget> tabs = [];
     ticketPrices.forEach((key, value) {
@@ -193,72 +197,81 @@ class _StationScreenState extends State<StationScreen>
                       borderRadius: BorderRadius.circular(15.0)),
                   color: Colors.white,
                   onPressed: () {
-                    if (userData['paymentCard'] == null ||
-                        userData['birthDate'] == null) {
-                      showDialog(
-                          barrierDismissible: false,
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15.0)),
-                                title: Text(
-                                    'Add a payments card and your birth date to buy a ticket'),
-                                content: FlatButton.icon(
-                                    onPressed: () => Navigator.pushNamed(
-                                        context, '/account'),
-                                    icon: Icon(Icons.account_circle_rounded),
-                                    label: Text('Go to Account Screen')));
-                          });
-                    } else {
-                      DatabaseManager.setTicketData(Ticket(
-                          used: false,
-                          mezzi: {
-                            lineData.keys.toList()[0]:
-                                lineData.values.toList()[0]['type']
-                          },
-                          email: user.email,
-                          buyTime:
-                              TicketScreen.toLocalDateTime(DateTime.now())[1],
-                          buyDate:
-                              TicketScreen.toLocalDateTime(DateTime.now())[0],
-                          type: key.toString().toLowerCase() == 'singleuse'
-                              ? TicketType.NORMAL
-                              : TicketType.PASS,
-                          startDate: key.toString().toLowerCase() != 'singleuse'
-                              ? TicketScreen.toLocalDateTime(chosenDate)[0]
-                                  .toString()
-                              : '',
-                          endDate: key.toString().toLowerCase() == 'weekly'
-                              ? TicketScreen.toLocalDateTime(
-                                      chosenDate.add(Duration(days: 7)))[0]
-                                  .toString()
-                              : key.toString().toLowerCase() == 'monthly'
-                                  ? TicketScreen.toLocalDateTime(
-                                          chosenDate.add(Duration(days: 29)))[0]
-                                      .toString()
-                                  : key.toString().toLowerCase() == 'biweekly'
-                                      ? TicketScreen.toLocalDateTime(chosenDate
-                                              .add(Duration(days: 15)))[0]
-                                          .toString()
-                                      : ''));
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15.0)),
-                                content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text('Ticket bought successfully'),
-                                      Icon(
-                                        Icons.check,
-                                        color: Colors.green,
-                                        size: 100,
-                                      )
-                                    ]));
-                          });
+                    if(user.emailVerified) {
+                      if (userData['paymentCard'] == null ||
+                          userData['birthDate'] == null) {
+                        showDialog(
+                            barrierDismissible: false,
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          15.0)),
+                                  title: Text(
+                                      'Add a payments card and your birth date to buy a ticket'),
+                                  content: FlatButton.icon(
+                                      onPressed: () =>
+                                          Navigator.pushNamed(
+                                              context, '/account'),
+                                      icon: Icon(Icons.account_circle_rounded),
+                                      label: Text('Go to Account Screen')));
+                            });
+                      } else {
+                        DatabaseManager.setTicketData(Ticket(
+                            used: false,
+                            mezzi: {
+                              lineData.keys.toList()[0]:
+                              lineData.values.toList()[0]['type']
+                            },
+                            email: user.email,
+                            buyTime:
+                            TicketScreen.toLocalDateTime(DateTime.now())[1],
+                            buyDate:
+                            TicketScreen.toLocalDateTime(DateTime.now())[0],
+                            type: key.toString().toLowerCase() == 'singleuse'
+                                ? TicketType.NORMAL
+                                : TicketType.PASS,
+                            startDate: key.toString().toLowerCase() !=
+                                'singleuse'
+                                ? TicketScreen.toLocalDateTime(chosenDate)[0]
+                                .toString()
+                                : '',
+                            endDate: key.toString().toLowerCase() == 'weekly'
+                                ? TicketScreen.toLocalDateTime(
+                                chosenDate.add(Duration(days: 7)))[0]
+                                .toString()
+                                : key.toString().toLowerCase() == 'monthly'
+                                ? TicketScreen.toLocalDateTime(
+                                chosenDate.add(Duration(days: 29)))[0]
+                                .toString()
+                                : key.toString().toLowerCase() == 'biweekly'
+                                ? TicketScreen.toLocalDateTime(chosenDate
+                                .add(Duration(days: 15)))[0]
+                                .toString()
+                                : ''));
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          15.0)),
+                                  content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text('Ticket bought successfully'),
+                                        Icon(
+                                          Icons.check,
+                                          color: Colors.green,
+                                          size: 100,
+                                        )
+                                      ]));
+                            });
+                      }
+                    }else{
+                      showMessage('A verification email was sent to the email ${user.email}');
+                      user.sendEmailVerification();
                     }
                     _scaffoldKey.currentState.showBodyScrim(false, 0.5);
                     _scaffoldKey.currentState.hideCurrentSnackBar();
