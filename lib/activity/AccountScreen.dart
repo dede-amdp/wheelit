@@ -181,7 +181,12 @@ class _AccountScreenState extends State<AccountScreen> {
                         child: RaisedButton(
                           padding: EdgeInsets.fromLTRB(30, 10, 30, 10),
                           onPressed: () {
-                            if (_formKey.currentState.validate()) update();
+                            if (_formKey.currentState.validate()) {
+                              update();
+                              setState(() {
+                                this.userData['userName'] = userName;
+                              });
+                            }
                           },
                           child: Text('Submit',
                               style: TextStyle(
@@ -337,18 +342,21 @@ class _AccountScreenState extends State<AccountScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Text('1. Tap the '),
-              Icon(Icons.qr_code_scanner_rounded),
-              Text(' button')
-            ]),
+            Wrap(
+                textDirection: TextDirection.ltr,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text('1. Tap the '),
+                  Icon(Icons.qr_code_scanner_rounded),
+                  Text(' button ')
+                ]),
             Text('2. Scan the QR code on the vehicle'),
-            Row(children: [
+            Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
               Text('3. Tap the '),
               Icon(Icons.power_settings_new_rounded),
               Text(' button to rent')
             ]),
-            Row(children: [
+            Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
               Text('4. Tap the '),
               Icon(Icons.power_settings_new_rounded),
               Text(' button again to stop')
@@ -387,7 +395,7 @@ class _AccountScreenState extends State<AccountScreen> {
           Text('1. Tap a station on the map '),
           Text('2. Tap a bus or a train line'),
           Text('3. Tap on the ticket type that you want to buy'),
-          Row(children: [
+          Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
             Text('4. Tap the '),
             Icon(Icons.check),
             Text(' button to buy the chosen ticket')

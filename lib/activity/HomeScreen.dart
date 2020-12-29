@@ -22,7 +22,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   Map mezzi;
   Map rented;
-  Ticket recent;
+  //Ticket recent;
   LatLng userLocation;
   GoogleMapController _gmc;
   TransportType filterType;
@@ -331,7 +331,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       Row(children: [
                         Icon(Icons.battery_full, color: Colors.green),
                         Text("\t${infoMezzo['battery']}%\t")
-                      ])
+                      ]),
+                      Text('Price: ${infoMezzo['price']}€/min'),
                     ])),
                 title: Text('General Information:'),
                 actions: <Widget>[
