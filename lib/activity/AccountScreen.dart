@@ -226,11 +226,27 @@ class _AccountScreenState extends State<AccountScreen> {
                                               color: Colors.red,
                                               child: Icon(Icons.delete,
                                                   color: Colors.white),
-                                              onPressed: () {
-                                                DatabaseManager.deleteUserData(
-                                                    userEmail);
-                                                Navigator.popAndPushNamed(
-                                                    context, '/welcome');
+                                              onPressed: () async {
+                                                if (await DatabaseManager
+                                                    .deleteUserData(
+                                                        userEmail)) {
+                                                  Navigator.popAndPushNamed(
+                                                      context, '/welcome');
+                                                } else {
+                                                  Navigator.pop(context);
+                                                  showDialog(
+                                                      context: context,
+                                                      builder:
+                                                          (context) =>
+                                                              AlertDialog(
+                                                                content: Text(
+                                                                    "You still have a rented vehicle: you won't be able to delete your account informations until you have closed all the rentings."),
+                                                                shape: RoundedRectangleBorder(
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            15.0)),
+                                                              ));
+                                                }
                                               }),
                                         ]),
                                   );

@@ -624,33 +624,37 @@ class DatabaseManager {
         FirebaseFirestore.instance.collection('tickets');
     if (!(await hasRented(userEmail))) {
       try {
+        List ids = [];
         usersCollection.doc(userEmail).delete(); //cancella dati utente
-        paymentCardCollection
+        await paymentCardCollection
             .where('owner', isEqualTo: userEmail)
             .get()
             .then((value) {
           if (value != null) {
             value.docs.forEach((paymentCard) {
-              paymentCardCollection
-                  .doc(paymentCard.id)
-                  .delete(); //cancella la carta
+              ids.add(paymentCard.id);
             });
           }
-          ticketsCollection
-              .where('user', isEqualTo: userEmail)
-              .get()
-              .then((docs) {
-            if (docs != null) {
-              docs.docs.forEach((doc) {
-                ticketsCollection
-                    .doc(doc.id)
-                    .delete(); //cancello i biglietti dell'utente
-              });
-            }
+          ids.forEach((id) {
+            paymentCardCollection.doc(id).delete(); //cancella la carta
           });
-          FirebaseAuth.instance.currentUser.delete(); //cancella l'account
-          return true;
         });
+        ids = [];
+        await ticketsCollection
+            .where('user', isEqualTo: userEmail)
+            .get()
+            .then((docs) {
+          if (docs != null) {
+            docs.docs.forEach((doc) {
+              ids.add(doc.id);
+            });
+          }
+        });
+        ids.forEach((id) {
+          ticketsCollection.doc(id).delete();
+        }); //cancello i biglietti dell'utente});
+        FirebaseAuth.instance.currentUser.delete(); //cancella l'account
+        return true;
       } catch (error) {
         print('ERROR: ${error.toString()}');
         return null;
@@ -665,7 +669,7 @@ class DatabaseManager {
         FirebaseFirestore.instance.collection('rented');
     bool result = false;
     try {
-      rentedCollection
+      await rentedCollection
           .where('user', isEqualTo: userEmail)
           .get()
           .then((documents) {
