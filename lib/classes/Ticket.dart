@@ -36,6 +36,10 @@ class Ticket {
   }
 
   String toString() {
+    List date = buyDate.split('-');
+    List startDateList = startDate.split('-');
+    List endDateList = endDate.split('-');
+
     String lines = this
         .mezzi
         .keys
@@ -44,10 +48,17 @@ class Ticket {
         .replaceAll('[', '')
         .replaceAll(']', '');
     String toReturn = 'Ticket bought on: ';
-    toReturn += buyDate + " at " + buyTime.substring(0, 5) + "\n";
+    toReturn += '${date[2]}/${date[1]}/${date[0]}' +
+        " at " +
+        buyTime.substring(0, 5) +
+        "\n";
     toReturn += "Valid for: " + lines + '\n';
     if (type == TicketType.PASS)
-      toReturn += 'Valid through: ' + startDate + ' to ' + endDate + "\n";
+      toReturn += 'Valid through: ' +
+          '${startDateList[2]}/${startDateList[1]}/${startDateList[0]}' +
+          ' to ' +
+          '${endDateList[2]}/${endDateList[1]}/${endDateList[0]}' +
+          "\n";
     toReturn += 'Ticket bought by $email\non Wheelit :D';
     return toReturn;
   }
@@ -59,9 +70,12 @@ class Ticket {
     return m.toString();
   }
 
-  static Ticket parseString(String ticketString) {
+  static Ticket parseString(Map ticketData, {bool id}) {
     //Genera un Ticket da una stringa
-
+    if (id != null) {
+      if (id) ticketData = ticketData.values.toList()[0];
+    }
+    String ticketString = ticketData.toString().toString();
     Ticket finalTicket = Ticket(email: "", mezzi: {}, buyDate: "", buyTime: "");
     List<String> campi = ticketString
         .replaceAll('{', "")
@@ -76,13 +90,11 @@ class Ticket {
           break;
         case 'buyTimeStamp': //Prende il numero di secondi (Epoch) e li converte in DateTime che poi è convertito in Data e ora dal metodo toLocalDateTime
           finalTicket.buyDate = TicketScreen.toLocalDateTime(
-              DateTime.fromMillisecondsSinceEpoch(
-                  int.parse(element.split(':')[1].split("(")[1].split('=')[1]) *
-                      1000))[0];
+              ticketData['buyTimeStamp'].toDate(),
+              local: true)[0];
           finalTicket.buyTime = TicketScreen.toLocalDateTime(
-              DateTime.fromMillisecondsSinceEpoch(
-                  int.parse(element.split(':')[1].split("(")[1].split('=')[1]) *
-                      1000))[1];
+              ticketData['buyTimeStamp'].toDate(),
+              local: true)[1];
           break;
         case 'public': //converte la stringa di mezzi in una mappa di mezzi
           Map mz = {};

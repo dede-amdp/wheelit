@@ -41,8 +41,10 @@ class _SignUpState extends State<SignUpScreen> {
         await DatabaseManager.setPaymentCard(
             email, cvc, carCode, expirationDate);
         await DatabaseManager.setUser(email, birthDate, userName);
-        User user = (await _auth.createUserWithEmailAndPassword(email: email, password: password)).user;
-        if(!user.emailVerified){
+        User user = (await _auth.createUserWithEmailAndPassword(
+                email: email, password: password))
+            .user;
+        if (!user.emailVerified) {
           await user.sendEmailVerification();
         }
         if (user != null) {
@@ -77,196 +79,219 @@ class _SignUpState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
+        key: _scaffoldKey,
         body: SingleChildScrollView(
-      child: Container(
-        child: Column(
-          children: <Widget>[
-            Container(
-              child: Image(
-                image: AssetImage("assets/images/DrawerHeaderImage.jpg"),
-                fit: BoxFit.contain,
-              ),
-            ),
-            SizedBox(height: 6),
-            Container(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                      child: TextFormField(
-                          // ignore: missing_return
-                          validator: (input) {
-                            if (input.isEmpty) {
-                              return '  Enter user name';
-                            }
-                          },
-                          decoration: InputDecoration(
-                              labelText: 'User name',
-                              prefixIcon: Icon(Icons.account_box_rounded)),
-                          onSaved: (input) => userName = input),
-                    ),
-                    Container(
-                      child: TextFormField(
-                          // ignore: missing_return
-                          validator: (input) {
-                            bool emailValid = RegExp(
-                                    r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                                .hasMatch(input);
-                            if (input.isEmpty) {
-                              return '  Enter Email';
-                            } else if (emailValid == false) {
-                              return '  invalid email format';
-                            }
-                          },
-                          decoration: InputDecoration(
-                              labelText: 'Email',
-                              prefixIcon: Icon(Icons.email)),
-                          onSaved: (input) => email = input),
-                    ),
-                    ListTile(
-                      title: Text(
-                          "Birth date: ${birthDate.day}/"
-                          "${birthDate.month}/ ${birthDate.year}  ",
-                          style: TextStyle(fontSize: 25.0, color: Colors.grey)),
-                      onTap: pickDate,
-                    ),
-                    Container(
-                      child: TextFormField(
-                          // ignore:, missing_return
-                          validator: (input) {
-                            if (input.length < 6) {
-                              return 'Provide Minimum 6 Character';
-                            }
-                          },
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            prefixIcon: Icon(Icons.lock),
-                          ),
-                          obscureText: true,
-                          onSaved: (input) => password = input),
-                    ),
-                    Container(
-                      child: TextFormField(
-                          // ignore: missing_return
-                          validator: (input) {
-                            bool validCardCode =
-                                RegExp(r'^[0-9]').hasMatch(input);
-                            if (input.length != 16 || !validCardCode) {
-                              return '  Invalid code';
-                            }
-                          },
-                          decoration: InputDecoration(
-                            labelText: 'Credit card code',
-                            prefixIcon: Icon(Icons.credit_card_rounded),
-                          ),
-                          onSaved: (input) => carCode = input),
-                    ),
-                    Container(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          TextFormField(
-                              //ignore:missing_return
+          child: Container(
+            child: Column(
+              children: <Widget>[
+                Container(
+                  child: Image(
+                    image: AssetImage("assets/images/DrawerHeaderImage.jpg"),
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                SizedBox(height: 6),
+                Container(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: <Widget>[
+                        Container(
+                          child: TextFormField(
+                              // ignore: missing_return
                               validator: (input) {
-                                bool validCvc =
+                                if (input.isEmpty) {
+                                  return '  Enter user name';
+                                }
+                              },
+                              style: TextStyle(
+                                  color: Theme.of(context).accentColor),
+                              decoration: InputDecoration(
+                                  labelText: 'User name',
+                                  prefixIcon: Icon(Icons.account_box_rounded,
+                                      color: Theme.of(context).accentColor)),
+                              onSaved: (input) => userName = input),
+                        ),
+                        Container(
+                          child: TextFormField(
+                              // ignore: missing_return
+                              validator: (input) {
+                                bool emailValid = RegExp(
+                                        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                                    .hasMatch(input);
+                                if (input.isEmpty) {
+                                  return '  Enter Email';
+                                } else if (emailValid == false) {
+                                  return '  invalid email format';
+                                }
+                              },
+                              style: TextStyle(
+                                  color: Theme.of(context).accentColor),
+                              decoration: InputDecoration(
+                                  labelText: 'Email',
+                                  prefixIcon: Icon(Icons.email,
+                                      color: Theme.of(context).accentColor)),
+                              onSaved: (input) => email = input),
+                        ),
+                        ListTile(
+                          title: Text(
+                              "Birth date: ${birthDate.day}/"
+                              "${birthDate.month}/ ${birthDate.year}  ",
+                              style: TextStyle(
+                                  fontSize: 25.0,
+                                  color: Theme.of(context).accentColor)),
+                          onTap: pickDate,
+                        ),
+                        Container(
+                          child: TextFormField(
+                              // ignore:, missing_return
+                              validator: (input) {
+                                if (input.length < 6) {
+                                  return 'Provide Minimum 6 Character';
+                                }
+                              },
+                              style: TextStyle(
+                                  color: Theme.of(context).accentColor),
+                              decoration: InputDecoration(
+                                labelText: 'Password',
+                                prefixIcon: Icon(Icons.lock,
+                                    color: Theme.of(context).accentColor),
+                              ),
+                              obscureText: true,
+                              onSaved: (input) => password = input),
+                        ),
+                        Container(
+                          child: TextFormField(
+                              // ignore: missing_return
+                              validator: (input) {
+                                bool validCardCode =
                                     RegExp(r'^[0-9]').hasMatch(input);
-                                if (input.length != 3 || !validCvc) {
+                                if (input.length != 16 || !validCardCode) {
                                   return '  Invalid code';
                                 }
                               },
+                              style: TextStyle(
+                                  color: Theme.of(context).accentColor),
                               decoration: InputDecoration(
-                                labelText: ' CVC/CVV',
-                                prefixIcon: Icon(Icons.lock),
+                                labelText: 'Credit card code',
+                                prefixIcon: Icon(Icons.credit_card_rounded,
+                                    color: Theme.of(context).accentColor),
                               ),
-                              obscureText: true,
-                              onSaved: (input) => cvc = input),
-                          TextFormField(
-                              //ignore:missing_return
-                              validator: (input) {
-                                if (input.isNotEmpty && input.length == 5) {
-                                  bool valid1 = input.contains('/');
-                                  if (valid1) {
-                                    bool valid2 =
-                                        RegExp(r'^[0-9/]').hasMatch(input);
-                                    bool notvalid =
-                                        RegExp(r'^[A-Z a-z]').hasMatch(input);
-                                    if (valid2 && !notvalid) {
-                                      String month = input.split('/')[0];
-                                      bool valid3 = int.parse(month) <= 12 &&
-                                          int.parse(month) > 0;
-                                      if (!valid3) return '\tInvalid month';
-                                    } else {
-                                      return 'it must contains only numbers and /';
+                              onSaved: (input) => carCode = input),
+                        ),
+                        Container(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              TextFormField(
+                                  //ignore:missing_return
+                                  validator: (input) {
+                                    bool validCvc =
+                                        RegExp(r'^[0-9]').hasMatch(input);
+                                    if (input.length != 3 || !validCvc) {
+                                      return '  Invalid code';
                                     }
-                                  } else {
-                                    return '\tInsert a valid expiration date';
-                                  }
-                                } else {
-                                  return '\tInsert a valid expiration date';
-                                }
-                              },
-                              decoration: InputDecoration(
-                                labelText: '  Expiration date',
-                                prefixIcon: Icon(Icons.calendar_today_rounded),
-                              ),
-                              onSaved: (input) => expirationDate = input)
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 20.0),
-                    RichText(
-                        text: TextSpan(
-                            text: "An account verification email will be sent to your email ",
-                            style: TextStyle(
-                              fontSize: 14.0,
-                              color: Colors.black,
-                            ))),
-                    SizedBox(height: 10),
-                    RaisedButton(
-                      padding: EdgeInsets.fromLTRB(30, 10, 30, 10),
-                      onPressed: signUp,
-                      child: Text('SignUp',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20.0,
-                              fontWeight: FontWeight.bold)),
-                      color: Theme.of(context).accentColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                    ),
-                    SizedBox(height: 20.0),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
+                                  },
+                                  style: TextStyle(
+                                      color: Theme.of(context).accentColor),
+                                  decoration: InputDecoration(
+                                    labelText: ' CVC/CVV',
+                                    prefixIcon: Icon(Icons.lock,
+                                        color: Theme.of(context).accentColor),
+                                  ),
+                                  obscureText: true,
+                                  onSaved: (input) => cvc = input),
+                              TextFormField(
+                                  //ignore:missing_return
+                                  validator: (input) {
+                                    if (input.isNotEmpty && input.length == 5) {
+                                      bool valid1 = input.contains('/');
+                                      if (valid1) {
+                                        bool valid2 =
+                                            RegExp(r'^[0-9/]').hasMatch(input);
+                                        bool notvalid = RegExp(r'^[A-Z a-z]')
+                                            .hasMatch(input);
+                                        if (valid2 && !notvalid) {
+                                          String month = input.split('/')[0];
+                                          bool valid3 =
+                                              int.parse(month) <= 12 &&
+                                                  int.parse(month) > 0;
+                                          if (!valid3) return '\tInvalid month';
+                                        } else {
+                                          return 'it must contains only numbers and /';
+                                        }
+                                      } else {
+                                        return '\tInsert a valid expiration date';
+                                      }
+                                    } else {
+                                      return '\tInsert a valid expiration date';
+                                    }
+                                  },
+                                  style: TextStyle(
+                                      color: Theme.of(context).accentColor),
+                                  decoration: InputDecoration(
+                                    labelText: '  Expiration date',
+                                    prefixIcon: Icon(
+                                        Icons.calendar_today_rounded,
+                                        color: Theme.of(context).accentColor),
+                                  ),
+                                  onSaved: (input) => expirationDate = input)
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 20.0),
                         RichText(
                             text: TextSpan(
-                                text: "Alredy signed? ",
+                                text:
+                                    "An account verification email will be sent to your email ",
                                 style: TextStyle(
-                                  fontSize: 15.0,
+                                  fontSize: 14.0,
                                   color: Colors.black,
                                 ))),
-                        GestureDetector(
-                          child: Text(
-                            'Login',
-                            style:
-                                TextStyle(color: Theme.of(context).accentColor),
+                        SizedBox(height: 10),
+                        RaisedButton(
+                          padding: EdgeInsets.fromLTRB(30, 10, 30, 10),
+                          onPressed: signUp,
+                          child: Text('SignUp',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20.0,
+                                  fontWeight: FontWeight.bold)),
+                          color: Theme.of(context).accentColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20.0),
                           ),
-                          onTap: () =>
-                              Navigator.pushReplacementNamed(context, '/login'),
+                        ),
+                        SizedBox(height: 20.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            RichText(
+                                text: TextSpan(
+                                    text: "Alredy signed? ",
+                                    style: TextStyle(
+                                      fontSize: 15.0,
+                                      color: Colors.black,
+                                    ))),
+                            GestureDetector(
+                              child: Text(
+                                'Login',
+                                style: TextStyle(
+                                    color: Theme.of(context).accentColor),
+                              ),
+                              onTap: () => Navigator.pushReplacementNamed(
+                                  context, '/login'),
+                            )
+                          ],
                         )
                       ],
-                    )
-                  ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
-    ));
+          ),
+        ));
   }
 
   void pickDate() async {

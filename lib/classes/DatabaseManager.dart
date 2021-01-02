@@ -352,15 +352,18 @@ class DatabaseManager {
     await Firebase.initializeApp();
     final firestoreInstance = FirebaseFirestore.instance;
     try {
-      firestoreInstance.collection("users").doc(email).get().then((snapShot) =>
-      {
-        if(!snapShot.exists){
-          firestoreInstance.collection("users").doc(email).set({
-          "userName": userName,
-        },
-        SetOptions(merge: true))
-      }
-      });
+      firestoreInstance
+          .collection("users")
+          .doc(email)
+          .get()
+          .then((snapShot) => {
+                if (!snapShot.exists)
+                  {
+                    firestoreInstance.collection("users").doc(email).set({
+                      "userName": userName,
+                    }, SetOptions(merge: true))
+                  }
+              });
     } catch (error) {
       print('ERROR ${error.toString()}');
     }
@@ -448,7 +451,7 @@ class DatabaseManager {
           };
           if (lastTicketMap != null) {
             if (lastTicketMap.isNotEmpty) {
-              toChange = Ticket.parseString(lastTicketMap.toString());
+              toChange = Ticket.parseString(lastTicketMap, id: true);
               onChanged(toChange);
             }
           }
@@ -516,7 +519,7 @@ class DatabaseManager {
           price = document.data()['price'];
         }
       });
-      electricCollection.doc(code).update({"state" : "FREE"});
+      electricCollection.doc(code).update({"state": "FREE"});
       await rentRef
           .where('user', isEqualTo: userEmail)
           .where('electric', isEqualTo: code)

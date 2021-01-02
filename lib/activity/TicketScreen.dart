@@ -13,15 +13,13 @@ class TicketScreen extends StatefulWidget {
   _TicketScreenState createState() => _TicketScreenState();
 
   //Metodo usato per convertire DateTime in data e ora comprensibili da un utente
-  static List toLocalDateTime(DateTime dt) {
-    DateTime dateOriginal = DateTime.tryParse(dt.toString());
-    List date = dateOriginal
-        .add(Duration(
-            hours: dateOriginal
-                .timeZoneOffset.inHours)) //aggiungo l'offset del fusorario
-        .toUtc()
-        .toString()
-        .split(" ");
+  static List toLocalDateTime(DateTime dt, {bool local}) {
+    DateTime dtLocal;
+    if (local != null) {
+      dtLocal = local ? dt : dt.toLocal();
+    } else
+      dtLocal = dt.toLocal();
+    List date = dtLocal.toString().split(" ");
     return date; //il primo elemento è la data, il secondo è l'orario
   }
 }
@@ -75,9 +73,9 @@ class _TicketScreenState extends State<TicketScreen> {
                             title: Text((ticket.type == TicketType.PASS
                                     ? 'Pass '
                                     : '') +
-                                'Ticket bought on: ${ticket.buyDate}'),
+                                'Ticket bought on: ${ticket.buyDate.split('-')[2]}/${ticket.buyDate.split('-')[1]}/${ticket.buyDate.split('-')[0]}'),
                             subtitle: Text(ticket.type == TicketType.PASS
-                                ? 'from: ${ticket.startDate} to ${ticket.endDate}'
+                                ? 'from: ${ticket.startDate.split('-')[2]}/${ticket.startDate.split('-')[1]}/${ticket.startDate.split('-')[0]} to ${ticket.endDate.split('-')[2]}/${ticket.endDate.split('-')[1]}/${ticket.endDate.split('-')[0]}'
                                 : ''),
                             onTap: () {
                               showDialog(
@@ -109,7 +107,7 @@ class _TicketScreenState extends State<TicketScreen> {
     Map tickets = await DatabaseManager.getTicketData(user.email);
     List<Ticket> temp = [];
     tickets.forEach((key, value) {
-      temp.add(Ticket.parseString(value.toString()));
+      temp.add(Ticket.parseString(value));
     });
     setState(() {
       this.ticketList = temp;
@@ -155,7 +153,7 @@ Future<String> downloadPdf(Ticket t) async {
             .replaceAll('.pdf', '');
       }).toList();
       String fileName = '/wheelitTicket';
-      int i = 0;
+      int i = 1;
       while (filenames.contains(fileName)) {
         fileName = '/wheelitTicket(${i++})';
       }
