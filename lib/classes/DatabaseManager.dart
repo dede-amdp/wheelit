@@ -516,6 +516,7 @@ class DatabaseManager {
           price = document.data()['price'];
         }
       });
+      electricCollection.doc(code).update({"state" : "FREE"});
       await rentRef
           .where('user', isEqualTo: userEmail)
           .where('electric', isEqualTo: code)

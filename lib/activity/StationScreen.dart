@@ -196,7 +196,9 @@ class _StationScreenState extends State<StationScreen>
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15.0)),
                   color: Colors.white,
-                  onPressed: () {
+                  onPressed: () async {
+                    await user.reload();
+                    this.user = FirebaseAuth.instance.currentUser;
                     if(user.emailVerified) {
                       if (userData['paymentCard'] == null ||
                           userData['birthDate'] == null) {

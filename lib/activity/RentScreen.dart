@@ -188,6 +188,8 @@ class _RentScreenState extends State<RentScreen> {
 
     if (!(await DatabaseManager.isRented(widget.codeMezzo))) {
       //se non è affittato
+      await user.reload();
+      this.user = FirebaseAuth.instance.currentUser;
       if(user.emailVerified) {
         await DatabaseManager.setStartRent(
             userEmail: this.user.email, transportCode: widget.codeMezzo);
@@ -201,7 +203,6 @@ class _RentScreenState extends State<RentScreen> {
         print("errore email non verificata");
         user.sendEmailVerification();
         showMessage('A verification email was sent to the email ${user.email}');
-
       }
     } else {
       await DatabaseManager.setEndRent(user.email, widget.codeMezzo);
