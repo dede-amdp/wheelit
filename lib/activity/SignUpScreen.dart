@@ -40,10 +40,10 @@ class _SignUpState extends State<SignUpScreen> {
       try {
         await DatabaseManager.setPaymentCard(
             email, cvc, carCode, expirationDate);
-        await DatabaseManager.setUser(email, birthDate, userName);
         User user = (await _auth.createUserWithEmailAndPassword(
                 email: email, password: password))
             .user;
+        await DatabaseManager.setUser(email, birthDate, userName);
         if (!user.emailVerified) {
           await user.sendEmailVerification();
         }
