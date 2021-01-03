@@ -55,6 +55,7 @@ dev_dependencies:
   syncfusion_flutter_pdf: ^18.3.53-beta
   path_provider: ^1.6.14
   flutter_local_notifications: ^3.0.2
+  ntp: ^1.0.7
 
 
 

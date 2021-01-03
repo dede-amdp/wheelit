@@ -9,6 +9,7 @@ import 'package:wheelit/classes/Transport.dart';
 import 'package:meta/meta.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:ntp/ntp.dart';
 
 class DatabaseManager {
   static Future<Map<String, Map>> getUsersList() async {
@@ -395,7 +396,7 @@ class DatabaseManager {
       await ticketsCollection
           .where('user', isEqualTo: email)
           .where('type', isEqualTo: "PASS")
-          .where('endDate', isLessThan: Timestamp.fromDate(DateTime.now()))
+          .where('endDate', isLessThan: Timestamp.fromDate(await NTP.now()))
           .get()
           .then((snapshot) {
         snapshot.docs.forEach((document) {
@@ -506,7 +507,8 @@ class DatabaseManager {
     }
   }
 
-  static Future<void> setEndRent(String userEmail, String code) async {
+  static Future<Map> setEndRent(String userEmail, String code) async {
+    Map toReturn = {};
     await Firebase.initializeApp();
     CollectionReference rentRef =
         FirebaseFirestore.instance.collection('rented');
@@ -520,6 +522,7 @@ class DatabaseManager {
         }
       });
       electricCollection.doc(code).update({"state": "FREE"});
+      DateTime endRent = await NTP.now(); //DateTime.now();
       await rentRef
           .where('user', isEqualTo: userEmail)
           .where('electric', isEqualTo: code)
@@ -528,18 +531,19 @@ class DatabaseManager {
           .then((document) {
         if (document != null) {
           Timestamp startRent = document.docs[0].data()['startRent'];
-          DateTime endRent = DateTime.now();
           int rentTimeinMinutes =
               endRent.difference(startRent.toDate()).inMinutes;
-          double cost = price * rentTimeinMinutes;
+          double cost = price * rentTimeinMinutes.truncateToDouble();
           rentRef
               .doc(document.docs[0].id)
               .update({'endRent': endRent, 'totalCost': cost});
+          toReturn.addAll({'cost': cost, 'time': rentTimeinMinutes});
         }
       });
     } catch (error) {
       print('ERROR: ${error.toString()}');
     }
+    return toReturn;
   }
 
   static Future<void> updateName(String userName) async {

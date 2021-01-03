@@ -204,8 +204,19 @@ class _RentScreenState extends State<RentScreen> {
         showMessage('A verification email was sent to the email ${user.email}');
       }
     } else {
-      await DatabaseManager.setEndRent(user.email, widget.codeMezzo);
+      Map rentData =
+          await DatabaseManager.setEndRent(user.email, widget.codeMezzo);
       Navigator.pop(context);
+      showDialog(
+          barrierDismissible: false,
+          context: context,
+          builder: (context) => AlertDialog(
+                title: Text('Rental Closed'),
+                content: Text(
+                    'Duration: ${rentData['time']} minutes\nTotal: ${rentData['cost']}€'),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0)),
+              ));
     }
   }
 }

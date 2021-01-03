@@ -240,7 +240,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                                           (context) =>
                                                               AlertDialog(
                                                                 content: Text(
-                                                                    "You still have a rented vehicle: you won't be able to delete your account informations until you have closed all the rentings."),
+                                                                    "You still have a rented vehicle: you won't be able to delete your account information until you have closed all the rentals."),
                                                                 shape: RoundedRectangleBorder(
                                                                     borderRadius:
                                                                         BorderRadius.circular(
